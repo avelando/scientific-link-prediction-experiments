@@ -1,21 +1,25 @@
 {
   "run_name": "field_characterization",
-  "snapshot_utc": "2026-11-21T19:48:02.350457+00:00",
+  "run_utc": "2026-11-21T20:40:56.948758+00:00",
   "temporal_mode": "retrospective_snapshot",
   "params": {
     "config_path": "config/default.yaml",
-    "year_min": 2013,
-    "year_max": 2022,
+    "year_range": [
+      2013,
+      2022
+    ],
+    "corpus_types": [
+      "article"
+    ],
     "candidate_field_ids": [
       17,
-      31,
-      27
+      27,
+      31
     ],
     "eligibility": {
-      "min_eligible_works_per_cut": 20000,
+      "min_semantic_eligible_per_cut": 20000,
       "min_english_abstract_fraction": 0.5,
-      "min_with_references_fraction": 0.5,
-      "min_subfield_diversity": 10
+      "min_with_references_fraction": 0.5
     },
     "cuts": [
       {
@@ -38,13 +42,15 @@
       }
     ],
     "limit": null,
-    "n_fields_characterized": 26,
-    "n_eligible": 6
+    "n_fields": 26,
+    "n_semantic_eligible": 16,
+    "n_bibliometric_ready": 16
   },
   "stats": {
     "n_requests": 0,
-    "n_cache_hits": 105,
+    "n_cache_hits": 262,
     "n_retries": 0,
+    "n_network_errors": 0,
     "bytes_downloaded": 0,
     "seconds_waiting": 0.0
   },
@@ -55,7 +61,18 @@
     "pandas": "3.1.1",
     "numpy": "2.5.5",
     "pyarrow": "26.0.1",
-    "pyyaml": "6.0.4"
+    "pyyaml": "6.0.4",
+    "matplotlib": "3.11.2",
+    "python-dotenv": "1.2.4",
+    "scientific-link-prediction-experiments": "0.1.0"
+  },
+  "git_commit": "fa8199af1471f667f38314e5d3eefc92de7050b0",
+  "config_sha256": "324576fa204ccdc997d367407ba9d88867f2570514dd9dc8c394c479d8ff0f04",
+  "artifact_hashes": {
+    "field_characterization.csv": "7331e9e7eeac927254410f1df59a26c821c52b67960ef136ebb38000ea98ff01",
+    "field_characterization_years.csv": "f2a5e1476aff7ba77a7690479d4357e39deb312afb8fae20fe270f173894e125",
+    "field_eligibility.csv": "4fe23bcda2e041cae1bf593035d037f4f8f2ed88aff3d3598e922766230d3f8b",
+    "field_sensitivity.csv": "a3b07f63b9d3ba4c5a03ced395d7a7e4c857d1ae873f42cbb9ab5b29b94965c0"
   },
   "errors": []
 }

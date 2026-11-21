@@ -20,9 +20,11 @@ import hashlib
 import json
 import logging
 import time
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 from urllib.parse import urlencode
 
 import httpx
@@ -33,6 +35,10 @@ logger = logging.getLogger("slpe.openalex")
 
 # HTTP statuses worth retrying (transient): rate limit + server/proxy errors.
 _RETRYABLE_STATUS = {429, 500, 502, 503, 504}
+
+# Bumped when the collection logic changes in a way that invalidates cached bodies.
+COLLECTOR_VERSION = "1.0"
+_CACHE_MARKER = "__slpe_cache__"
 
 
 class OpenAlexError(RuntimeError):
@@ -46,6 +52,7 @@ class RequestStats:
     n_requests: int = 0          # actual network requests (cache misses)
     n_cache_hits: int = 0
     n_retries: int = 0
+    n_network_errors: int = 0    # transport failures before any HTTP response
     bytes_downloaded: int = 0
     seconds_waiting: float = 0.0  # time spent sleeping (throttle + backoff)
 
@@ -54,8 +61,11 @@ class RequestStats:
             "n_requests": self.n_requests,
             "n_cache_hits": self.n_cache_hits,
             "n_retries": self.n_retries,
+            "n_network_errors": self.n_network_errors,
             "bytes_downloaded": self.bytes_downloaded,
             "seconds_waiting": round(self.seconds_waiting, 3),
+            # NOTE: n_cache_hits reflects reuse in THIS run; a warm-cache rerun with
+            # n_requests==0 does not mean the original collection was free.
         }
 
 
@@ -73,7 +83,7 @@ class OpenAlexClient:
 
     # --- construction ------------------------------------------------------
     @classmethod
-    def from_config(cls, config: OpenAlexConfig) -> "OpenAlexClient":
+    def from_config(cls, config: OpenAlexConfig) -> OpenAlexClient:
         if config.cache_enabled:
             config.cache_dir.mkdir(parents=True, exist_ok=True)
         headers = {"User-Agent": _user_agent(config), "Accept": "application/json"}
@@ -85,7 +95,7 @@ class OpenAlexClient:
             self._client.close()
             self._client = None
 
-    def __enter__(self) -> "OpenAlexClient":
+    def __enter__(self) -> OpenAlexClient:
         return self
 
     def __exit__(self, *exc: object) -> None:
@@ -100,13 +110,52 @@ class OpenAlexClient:
             out.setdefault("api_key", self.config.api_key)
         return out
 
+    def _canonical_url(self, url: str, params: dict[str, Any]) -> str:
+        # Exclude secrets (api_key AND mailto) so the stored URL is shareable.
+        cache_params = {k: v for k, v in sorted(params.items()) if k not in ("api_key", "mailto")}
+        return f"{url}?{urlencode(cache_params)}"
+
     def _cache_path(self, url: str, params: dict[str, Any]) -> Path:
-        # Exclude the secret api_key from the cache key so cached files are
-        # shareable and key rotation doesn't invalidate the cache.
-        cache_params = {k: v for k, v in sorted(params.items()) if k != "api_key"}
-        canonical = f"{url}?{urlencode(cache_params)}"
-        digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        digest = hashlib.sha256(self._canonical_url(url, params).encode("utf-8")).hexdigest()
         return self.config.cache_dir / f"{digest}.json"
+
+    def _read_cache(self, cache_path: Path) -> dict[str, Any] | None:
+        """Return the cached body, honouring provenance envelope + max age.
+
+        Backward-compatible: legacy entries are raw response bodies (no envelope);
+        they are returned as-is. New entries are envelopes carrying provenance.
+        """
+        try:
+            raw = json.loads(cache_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            cache_path.unlink(missing_ok=True)
+            return None
+        if isinstance(raw, dict) and raw.get(_CACHE_MARKER):
+            max_age = self.config.cache_max_age_days
+            if max_age is not None:
+                fetched = raw.get("fetched_utc")
+                if fetched:
+                    age_days = (datetime.now(timezone.utc) - datetime.fromisoformat(fetched)).days
+                    if age_days > max_age:
+                        logger.info("cache entry older than %s days; refetching", max_age)
+                        return None
+            return raw.get("body")
+        return raw  # legacy raw-body entry
+
+    def _write_cache(
+        self, cache_path: Path, body: dict[str, Any], url_no_secret: str, response_date: str | None
+    ) -> None:
+        envelope = {
+            _CACHE_MARKER: 1,
+            "collector_version": COLLECTOR_VERSION,
+            "fetched_utc": datetime.now(timezone.utc).isoformat(),
+            "response_date": response_date,  # OpenAlex 'Date' header (when the server served it)
+            "url": url_no_secret,
+            "body": body,
+        }
+        tmp = cache_path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(envelope), encoding="utf-8")
+        tmp.replace(cache_path)  # atomic write -> safe to interrupt mid-run
 
     def _throttle(self) -> None:
         elapsed = time.monotonic() - self._last_request_ts
@@ -134,23 +183,20 @@ class OpenAlexClient:
         url = f"{self.config.base_url}/{path.lstrip('/')}"
 
         cache_path = self._cache_path(url, params) if self.config.cache_enabled else None
-        if cache_path is not None and cache_path.exists():
-            self.stats.n_cache_hits += 1
-            try:
-                return json.loads(cache_path.read_text(encoding="utf-8"))
-            except json.JSONDecodeError:
-                cache_path.unlink(missing_ok=True)  # corrupt cache entry; refetch
+        if cache_path is not None and cache_path.exists() and not self.config.refresh_cache:
+            body = self._read_cache(cache_path)
+            if body is not None:
+                self.stats.n_cache_hits += 1
+                return body
 
         full_params = self._auth_params(params)
-        payload = self._get_with_retries(url, full_params)
+        payload, response_date = self._get_with_retries(url, full_params)
 
         if cache_path is not None:
-            tmp = cache_path.with_suffix(".tmp")
-            tmp.write_text(json.dumps(payload), encoding="utf-8")
-            tmp.replace(cache_path)  # atomic write -> safe to interrupt mid-run
+            self._write_cache(cache_path, payload, self._canonical_url(url, params), response_date)
         return payload
 
-    def _get_with_retries(self, url: str, params: dict[str, Any]) -> dict[str, Any]:
+    def _get_with_retries(self, url: str, params: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
         assert self._client is not None
         backoff = self.config.backoff_initial_seconds
         last_exc: Exception | None = None
@@ -162,13 +208,14 @@ class OpenAlexClient:
                 resp = self._client.get(url, params=params)
             except httpx.RequestError as exc:  # network/DNS/timeout
                 last_exc = exc
+                self.stats.n_network_errors += 1
                 logger.warning("request error (attempt %d/%d): %s", attempt, self.config.max_retries, exc)
             else:
                 self.stats.n_requests += 1
                 self.stats.bytes_downloaded += len(resp.content)
                 if resp.status_code == 200:
                     try:
-                        return resp.json()
+                        return resp.json(), resp.headers.get("Date")
                     except json.JSONDecodeError as exc:
                         raise OpenAlexError(f"non-JSON 200 response from {url}") from exc
                 if resp.status_code not in _RETRYABLE_STATUS:
@@ -205,13 +252,24 @@ class OpenAlexClient:
     def group_by(
         self, path: str, group_by: str, filters: str | None = None, **extra: Any
     ) -> list[dict[str, Any]]:
-        """Return the ``group_by`` aggregation buckets (``[{key, key_display_name, count}]``)."""
-        params: dict[str, Any] = {"group_by": group_by, "per-page": 200}
+        """Return the ``group_by`` aggregation buckets (``[{key, key_display_name, count}]``).
+
+        Warns if the number of buckets equals the page cap, which may indicate the
+        aggregation was truncated and some groups are missing.
+        """
+        per_page = int(extra.pop("per_page", 200))
+        params: dict[str, Any] = {"group_by": group_by, "per-page": per_page}
         if filters:
             params["filter"] = filters
         params.update(extra)
         payload = self.get(path, params)
-        return list(payload.get("group_by", []))
+        buckets = list(payload.get("group_by", []))
+        if len(buckets) >= per_page:
+            logger.warning(
+                "group_by '%s' returned %d buckets (page cap %d) — results may be "
+                "truncated; filters=%s", group_by, len(buckets), per_page, filters,
+            )
+        return buckets
 
     def get_single(self, path: str, **extra: Any) -> dict[str, Any]:
         """Fetch a single entity (e.g. ``fields/17``)."""
@@ -239,21 +297,48 @@ class OpenAlexClient:
         """Yield every result row via cursor pagination (resumable).
 
         Cursor paging (``cursor=*``) scales to millions of rows. Each page is
-        cached, so re-running replays from disk cheaply. If ``checkpoint_path`` is
-        given, the next cursor is persisted after every page so a *fresh process*
-        resumes mid-collection without replaying earlier pages.
+        cached, so re-running replays from disk cheaply.
+
+        Checkpointing contract (``checkpoint_path``): the checkpoint stores the
+        query identity (a hash of path+filters+select) alongside the next cursor.
+        The cursor advances only AFTER the consumer signals the page is durably
+        persisted — call the yielded generator's ``.send(True)`` is not used;
+        instead the cursor is written only once the page's rows have all been
+        yielded AND the next page is requested, so a crash mid-page re-requests
+        that page on resume (at-least-once delivery; the consumer must dedupe by
+        work id). A saved cursor is IGNORED if its query identity differs, so a
+        checkpoint can never be applied to a different query. A completed run
+        writes an explicit ``DONE`` marker; re-running a finished collection then
+        yields nothing instead of restarting from scratch.
 
         Yields:
             One work/entity dict at a time (never holds the full set in memory).
         """
         per_page = per_page or self.config.per_page
+        query_id = hashlib.sha256(
+            f"{path}|{filters}|{select}|{sorted(extra.items())}".encode()
+        ).hexdigest()[:16]
+
         cursor = "*"
-        if checkpoint_path is not None:
-            cp = Path(checkpoint_path)
-            if cp.exists():
-                saved = cp.read_text(encoding="utf-8").strip()
-                if saved:
-                    cursor = saved
+        cp = Path(checkpoint_path) if checkpoint_path is not None else None
+        if cp is not None and cp.exists():
+            try:
+                state = json.loads(cp.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                state = {}
+            if state.get("query_id") == query_id:
+                if state.get("done"):
+                    return  # finished collection; do not restart
+                cursor = state.get("cursor") or "*"
+            else:
+                logger.warning("checkpoint query mismatch; ignoring saved cursor")
+
+        def _save(cur: str | None, done: bool) -> None:
+            if cp is not None:
+                cp.write_text(
+                    json.dumps({"query_id": query_id, "cursor": cur, "done": done}),
+                    encoding="utf-8",
+                )
 
         while cursor:
             params: dict[str, Any] = {"per-page": per_page, "cursor": cursor}
@@ -268,11 +353,105 @@ class OpenAlexClient:
             for row in results:
                 yield row
 
-            cursor = payload.get("meta", {}).get("next_cursor")
-            if checkpoint_path is not None:
-                Path(checkpoint_path).write_text(cursor or "", encoding="utf-8")
-            if not results:  # defensive: empty page ends iteration
+            next_cursor = payload.get("meta", {}).get("next_cursor")
+            if not results or not next_cursor:
+                _save(None, done=True)
                 break
+            cursor = next_cursor
+            _save(cursor, done=False)
+
+    def fetch_pages(
+        self,
+        path: str,
+        on_page: Callable[[list[dict[str, Any]], int], None],
+        *,
+        filters: str | None = None,
+        select: str | None = None,
+        per_page: int | None = None,
+        checkpoint_path: str | Path | None = None,
+        max_records: int | None = None,
+        **extra: Any,
+    ) -> int:
+        """Page through results with TRANSACTIONAL checkpointing.
+
+        For each page, ``on_page(rows, page_index)`` is called to persist the rows.
+        The checkpoint cursor advances **only after** ``on_page`` returns without
+        raising — so a crash during persistence re-fetches the same page on resume
+        (at-least-once; dedupe downstream by work id). This fixes the weaker
+        guarantee of :meth:`paginate`, where the cursor advanced before the consumer
+        confirmed durability.
+
+        The checkpoint is bound to the query identity (path+filters+select+extra); a
+        saved cursor from a different query is ignored. A finished collection records
+        a ``done`` marker and is not restarted.
+
+        Args:
+            on_page: callback that durably persists a page's rows; must raise on
+                failure so the cursor is not advanced.
+            max_records: optional cap on total records fetched (for test/pilot modes).
+
+        Returns:
+            Total number of records delivered to ``on_page``.
+        """
+        per_page = per_page or self.config.per_page
+        query_id = hashlib.sha256(
+            f"{path}|{filters}|{select}|{sorted(extra.items())}".encode()
+        ).hexdigest()[:16]
+
+        cp = Path(checkpoint_path) if checkpoint_path is not None else None
+        cursor = "*"
+        page_index = 0
+        total = 0
+        if cp is not None and cp.exists():
+            try:
+                state = json.loads(cp.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                state = {}
+            if state.get("query_id") == query_id:
+                if state.get("done"):
+                    return int(state.get("total", 0))
+                cursor = state.get("cursor") or "*"
+                page_index = int(state.get("page_index", 0))
+                total = int(state.get("total", 0))
+            else:
+                logger.warning("checkpoint query mismatch; starting fresh")
+
+        def _save(cur: str | None, done: bool) -> None:
+            if cp is not None:
+                tmp = cp.with_suffix(".tmp")
+                tmp.write_text(json.dumps({
+                    "query_id": query_id, "cursor": cur, "done": done,
+                    "page_index": page_index, "total": total,
+                }), encoding="utf-8")
+                tmp.replace(cp)
+
+        while cursor:
+            params: dict[str, Any] = {"per-page": per_page, "cursor": cursor}
+            if filters:
+                params["filter"] = filters
+            if select:
+                params["select"] = select
+            params.update(extra)
+            payload = self.get(path, params)
+            results = payload.get("results", [])
+
+            if max_records is not None and total + len(results) > max_records:
+                results = results[: max_records - total]
+
+            # Persist FIRST; only then advance the checkpoint cursor.
+            on_page(results, page_index)
+            total += len(results)
+            page_index += 1
+
+            next_cursor = payload.get("meta", {}).get("next_cursor")
+            reached_cap = max_records is not None and total >= max_records
+            if not results or not next_cursor or reached_cap:
+                _save(None, done=True)
+                break
+            cursor = next_cursor
+            _save(cursor, done=False)
+
+        return total
 
 
 def _user_agent(config: OpenAlexConfig) -> str:

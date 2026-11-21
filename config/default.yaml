@@ -34,6 +34,21 @@ paths:
   logs: "logs"
 
 # ---------------------------------------------------------------------------
+# Corpus definition — which document types count, and the English-abstract rule.
+# The project's focal corpus is scientific articles with English title+abstract
+# and usable dates (§4.1). Types are configurable so the choice is explicit and
+# auditable, and a sensitivity set lets us compare against a conference-inclusive
+# corpus (important for Computer Science).
+# ---------------------------------------------------------------------------
+corpus:
+  # OpenAlex work `type` values that make up the primary (focal) corpus.
+  types: ["article"]
+  # Alternative corpus for the sensitivity comparison (e.g. include conferences).
+  sensitivity_types: ["article", "conference-paper"]
+  # Require English + a (metadata-flagged) abstract for the SEMANTIC corpus.
+  require_english_abstract: true
+
+# ---------------------------------------------------------------------------
 # Stage 1 — field characterization and domain selection (what this phase runs).
 # ---------------------------------------------------------------------------
 characterization:
@@ -44,14 +59,21 @@ characterization:
   # Candidate fields explicitly named in the project brief as starting points.
   # Characterization still runs over ALL 26 fields; these are only highlighted.
   candidate_field_ids: [17, 31, 27]   # Computer Science, Physics and Astronomy, Medicine
-  # Eligibility thresholds for a field to qualify for the main evaluation.
-  # Defined on DATA-QUALITY grounds only, never on model performance
-  # (project requirement: selection must not depend on test-set accuracy).
+  # Eligibility is reported as SEPARATE criteria, not one opaque boolean. None of
+  # them uses model accuracy (project requirement: selection must not depend on
+  # the test set). Subfield COUNT is descriptive only — never an eliminatory gate
+  # (an absolute minimum penalises fields with coarse OpenAlex taxonomies such as
+  # Physics and Astronomy). Thematic breadth is instead summarised by normalized
+  # subfield entropy, reported for inspection.
   eligibility:
-    min_eligible_works_per_cut: 20000   # works with en title+abstract, refs, usable date
-    min_english_abstract_fraction: 0.5  # share of works with a reconstructable en abstract
-    min_with_references_fraction: 0.5   # share of works exposing outgoing references
-    min_subfield_diversity: 10          # distinct subfields present (disciplinary breadth)
+    # Volume of the SEMANTIC corpus (type + en + abstract) in the smallest cut's
+    # history window — enough examples to build networks and candidate pairs.
+    min_semantic_eligible_per_cut: 20000
+    # Metadata coverage of English abstracts among corpus-type works.
+    min_english_abstract_fraction: 0.5
+    # Reference coverage (bibliometric readiness) among semantic-corpus works.
+    # Flags "bibliometric-ready"; it does NOT remove a field from the semantic corpus.
+    min_with_references_fraction: 0.5
 
 # ---------------------------------------------------------------------------
 # Temporal protocol (project 4.1 / 4.5). Established in the project; values here
@@ -61,6 +83,10 @@ temporal:
   history_window_years: 5     # L (project default; 3 and 7 explored later as sensitivity)
   emergence_horizon_years: 1  # Delta_e
   disruption_horizon_years: 3 # Delta_d (exploratory availability study in this phase)
+  # Earliest year of OBSERVED history used to check whether a concept pair is
+  # truly novel (§4.1): must be broader than the recent L-window. A pair seen any
+  # time in [full_history_start, T] is NOT novel, even if absent from the L-window.
+  full_history_start: 2000
   # Retrospective cuts: build features from [cut-L+1, cut], evaluate emergence in (cut, cut+Delta_e].
   cuts:
     - { name: "2017_to_2018", history_start: 2013, cut: 2017, emergence_year: 2018 }

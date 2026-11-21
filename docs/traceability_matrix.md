@@ -4,13 +4,55 @@ This matrix links each methodological requirement to (a) its source in the PhD
 research project (`Avelar_Project.pdf`), (b) the concrete decision taken for the
 **preliminary experiments**, and (c) the code component that implements it.
 
-Legend for **Status**:
+Legend for **Status** (requirement ORIGIN):
 
 - **P (Project)** — a decision already fixed in the research project; we implement it as written.
 - **E (Extension)** — a preliminary-experiment choice we are proposing now; justified below or in the referenced note.
 - **L (Later)** — part of the full PhD methodology, intentionally *not* implemented in this phase; architecture kept extensible for it.
 
+Legend for **Impl.** (implementation status — distinct from origin):
+
+- **done+tested** — implemented and covered by automated tests.
+- **done** — implemented, lightly or not yet unit-tested.
+- **interface** — config/placeholder/docstring only; no behaviour yet.
+- **planned** — not started (Stage ≥ 2).
+
 Any deviation from a project decision is flagged explicitly in the **Notes** column.
+See also [`audit_response_matrix.md`](audit_response_matrix.md) for the Stage-1 audit remediation.
+
+### Stage-1 implementation status (this phase)
+
+| Area | Impl. | Where |
+|---|---|---|
+| OpenAlex client (auth, paging, retries, cache **envelope+provenance**, checkpoints, accounting) | done+tested | `openalex/client.py`, `tests/test_client.py` |
+| Abstract reconstruction + integrity diagnostics | done+tested | `openalex/abstracts.py`, `tests/test_abstracts.py` |
+| Config (typed, dotenv, validation, temporal protocol) | done+tested | `config.py`, `tests/test_config.py` |
+| Corpus types (configurable) + 3 coverage levels (semantic/bibliometric/DI-candidate) | done+tested | `characterization/fields.py`, `tests/test_characterization.py` |
+| Eligibility (no subfield gate) + sensitivity + legacy reproduction | done+tested | `characterization/eligibility.py`, `tests/test_eligibility.py` |
+| Weighted field attribution (Brito adaptation) | done+tested | `characterization/weighting.py`, `tests/test_weighting.py` |
+| Textual-quality sampling (Wilson CIs) | done+tested | `characterization/quality_sampling.py`, `tests/test_quality_sampling.py` |
+| Log redaction / credential hygiene | done+tested | `logging_utils.py`, `tests/test_security.py` |
+| Report from frozen artifacts (figures + markdown + recommendation) | done | `characterization/report.py`, CLIs |
+| Weighted field attribution wired into a CLI + real run | done+tested | `cli/weighted_fields.py`, `tests/test_weighting.py` |
+| Stratified (by-year) textual quality | done | `cli/sample_quality.py --by-year` |
+| Selection rationale (eligibility + conference + domains) | done | `docs/stage1_selection_rationale.md` |
+| Manifests (git commit, config + artifact hashes) | done | `manifest.py` |
+
+### Stage-2 implementation status (collection)
+
+| Area | Impl. | Where |
+|---|---|---|
+| Temporal config: full-history / feature-window / emergence ranges | done+tested | `config.py` (`TemporalConfig.*_range`), `tests/test_config.py` |
+| Transactional page collector (cursor advances after persist) | done+tested | `openalex/client.py::fetch_pages`, `tests/test_client.py` |
+| Historical collector (raw parquet, batches, resume, test/full modes) | done+tested | `collection/collector.py`, pilot run |
+| Normalized schema (publications/topics/references) | done+tested | `collection/schema.py`, `tests/test_collection.py` |
+| Parquet layers (raw/interim/processed) + integrity | done+tested | `collection/io_parquet.py` |
+| Deduplication + version linking (confirmed/uncertain) | done+tested | `collection/dedup.py` |
+| Semantic corpus prep + exclusion stats | done+tested | `collection/semantic_corpus.py` |
+| Bibliometric edges (citing→cited, external kept) | done+tested | `collection/bibliometric.py` |
+| Temporal separation / no-leakage enforcement | done+tested | `collection/temporal.py` |
+| Pilot CLI (real run, idempotent resume, cost estimate) | done | `cli/collect_pilot.py` |
+| Concepts, networks, link prediction, disruption indices, RAG/LLM | planned | Stage ≥ 3 |
 
 ---
 

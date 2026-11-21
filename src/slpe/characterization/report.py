@@ -1,15 +1,13 @@
-"""Turn the Stage-1 characterization into analysable tables, figures and a report.
+"""Render Stage-1 figures and a markdown summary from FROZEN artifacts.
 
-Consumes the artifacts written by ``slpe.cli.characterize_fields`` (the per-field
-characterization and eligibility tables) plus the record objects, and produces:
+To avoid mixing numbers from one collection with metadata from another (an audit
+finding), every function here consumes already-written DataFrames/CSVs — it makes
+no OpenAlex calls. The characterization CLI writes these artifacts; the report CLI
+re-renders strictly from them.
 
-    * figures/stage1_eligible_volume.png   — eligible volume per cut, all 26 fields
-    * figures/stage1_coverage_scatter.png  — English-abstract vs reference coverage
-    * figures/stage1_candidate_years.png   — yearly eligible volume for key fields
-    * preliminary_results_stage1.md        — a concise, numbers-only write-up
-
-Everything is derived from *measured* indicators; the report states only what was
-computed and never claims predictive validation.
+Visual encoding (fixed per the audit): COLOUR encodes eligibility; MARKER/EDGE
+encodes whether the field is a project candidate — the two axes never share a
+channel.
 """
 
 from __future__ import annotations
@@ -19,111 +17,84 @@ from typing import TYPE_CHECKING
 
 import matplotlib
 
-matplotlib.use("Agg")  # headless, deterministic rendering
-import matplotlib.pyplot as plt  # noqa: E402
-
-from slpe.characterization.eligibility import EligibilityResult  # noqa: E402
-from slpe.characterization.fields import FieldCharacterization  # noqa: E402
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 if TYPE_CHECKING:
     import pandas as pd
 
-_CANDIDATE_COLOR = "#c0392b"
 _ELIGIBLE_COLOR = "#2e7d32"
 _INELIGIBLE_COLOR = "#95a5a6"
+_BIBLIO_EDGE = "#1565c0"
+_CANDIDATE_EDGE = "#c0392b"
 
 
-def _bar_colors(
-    records: list[FieldCharacterization],
-    elig_by_id: dict[int, bool],
-    candidates: set[int],
-) -> list[str]:
-    colors = []
-    for r in records:
-        if r.field_id in candidates:
-            colors.append(_CANDIDATE_COLOR)
-        elif elig_by_id.get(r.field_id):
-            colors.append(_ELIGIBLE_COLOR)
-        else:
-            colors.append(_INELIGIBLE_COLOR)
-    return colors
+def _elig_color(semantic_eligible: bool) -> str:
+    return _ELIGIBLE_COLOR if semantic_eligible else _INELIGIBLE_COLOR
 
 
-def plot_eligible_volume(
-    records: list[FieldCharacterization],
-    elig_by_id: dict[int, bool],
-    candidates: set[int],
-    out_path: Path,
-) -> Path:
-    recs = sorted(records, key=lambda r: r.min_eligible_per_cut)
-    names = [f"{r.display_name} ({r.field_id})" for r in recs]
-    vals = [r.min_eligible_per_cut for r in recs]
-    colors = _bar_colors(recs, elig_by_id, candidates)
+def plot_eligible_volume(df: pd.DataFrame, candidates: set[int], out_path: Path) -> Path:
+    d = df.sort_values("min_semantic_eligible_per_cut")
+    names = [f"{r.display_name} ({r.field_id})" for r in d.itertuples()]
+    vals = list(d["min_semantic_eligible_per_cut"])
+    colors = [_elig_color(bool(e)) for e in d["semantic_eligible"]]
+    edges = [_CANDIDATE_EDGE if fid in candidates else "none" for fid in d["field_id"]]
 
     fig, ax = plt.subplots(figsize=(9, 10))
-    ax.barh(names, vals, color=colors)
+    ax.barh(names, vals, color=colors, edgecolor=edges, linewidth=1.6)
     ax.set_xscale("log")
-    ax.set_xlabel("Min eligible works per cut (en abstract + references), log scale")
-    ax.set_title("Stage 1 — eligible volume per temporal cut, by OpenAlex field")
+    ax.set_xlabel("Min SEMANTIC-eligible works per cut (type + en abstract), log scale")
+    ax.set_title("Stage 1 — semantic-corpus volume per temporal cut, by field")
     handles = [
-        plt.Rectangle((0, 0), 1, 1, color=_CANDIDATE_COLOR),
         plt.Rectangle((0, 0), 1, 1, color=_ELIGIBLE_COLOR),
         plt.Rectangle((0, 0), 1, 1, color=_INELIGIBLE_COLOR),
+        plt.Rectangle((0, 0), 1, 1, facecolor="white", edgecolor=_CANDIDATE_EDGE, linewidth=1.6),
     ]
-    ax.legend(handles, ["project candidate", "eligible", "ineligible"], loc="lower right")
+    ax.legend(handles, ["semantic-eligible", "ineligible", "project candidate (edge)"],
+              loc="lower right")
     fig.tight_layout()
     fig.savefig(out_path, dpi=130)
     plt.close(fig)
     return out_path
 
 
-def plot_coverage_scatter(
-    records: list[FieldCharacterization],
-    elig_by_id: dict[int, bool],
-    candidates: set[int],
-    out_path: Path,
-) -> Path:
+def plot_coverage_scatter(df: pd.DataFrame, candidates: set[int], out_path: Path) -> Path:
     fig, ax = plt.subplots(figsize=(9, 7))
-    for r in records:
-        if r.field_id in candidates:
-            color, marker, size = _CANDIDATE_COLOR, "D", 90
-        elif elig_by_id.get(r.field_id):
-            color, marker, size = _ELIGIBLE_COLOR, "o", 60
-        else:
-            color, marker, size = _INELIGIBLE_COLOR, "o", 40
-        ax.scatter(r.english_abstract_fraction, r.with_references_fraction,
-                   c=color, marker=marker, s=size, edgecolors="white", linewidths=0.5, zorder=3)
-        if r.field_id in candidates or elig_by_id.get(r.field_id):
+    for r in df.itertuples():
+        color = _elig_color(bool(r.semantic_eligible))
+        is_cand = r.field_id in candidates
+        ax.scatter(
+            r.english_abstract_fraction, r.with_references_fraction,
+            c=color, marker="D" if is_cand else "o",
+            s=120 if is_cand else 55,
+            edgecolors=_CANDIDATE_EDGE if is_cand else "white",
+            linewidths=1.6 if is_cand else 0.5, zorder=3,
+        )
+        if is_cand or r.semantic_eligible:
             ax.annotate(str(r.field_id), (r.english_abstract_fraction, r.with_references_fraction),
                         fontsize=8, xytext=(3, 3), textcoords="offset points")
     ax.axvline(0.5, ls="--", c="k", lw=0.7)
     ax.axhline(0.5, ls="--", c="k", lw=0.7)
-    ax.set_xlabel("English-abstract fraction")
-    ax.set_ylabel("With-references fraction (of English-abstract works)")
-    ax.set_title("Stage 1 — documentary coverage by field (labels = field id)")
+    ax.set_xlabel("English-abstract fraction (metadata proxy; semantic / corpus-type)")
+    ax.set_ylabel("With-references fraction (bibliometric / semantic)")
+    ax.set_title("Stage 1 — coverage by field (colour=eligible, diamond=candidate)")
     fig.tight_layout()
     fig.savefig(out_path, dpi=130)
     plt.close(fig)
     return out_path
 
 
-def plot_candidate_years(
-    records: list[FieldCharacterization],
-    field_ids: list[int],
-    out_path: Path,
-) -> Path:
-    by_id = {r.field_id: r for r in records}
+def plot_candidate_years(years_df: pd.DataFrame, field_ids: list[int],
+                         names: dict[int, str], out_path: Path) -> Path:
     fig, ax = plt.subplots(figsize=(9, 6))
     for fid in field_ids:
-        r = by_id.get(fid)
-        if r is None:
+        sub = years_df[years_df["field_id"] == fid].sort_values("year")
+        if sub.empty:
             continue
-        xs = [y.year for y in r.years]
-        ys = [y.eligible for y in r.years]
-        ax.plot(xs, ys, marker="o", label=f"{r.display_name} ({fid})")
+        ax.plot(sub["year"], sub["semantic"], marker="o", label=f"{names.get(fid, fid)} ({fid})")
     ax.set_xlabel("Publication year")
-    ax.set_ylabel("Eligible works (en abstract + references)")
-    ax.set_title("Stage 1 — yearly eligible volume for selected fields")
+    ax.set_ylabel("Semantic-eligible works (type + en abstract)")
+    ax.set_title("Stage 1 — yearly semantic-corpus volume for selected fields")
     ax.legend()
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
@@ -133,21 +104,22 @@ def plot_candidate_years(
 
 
 def write_markdown_report(
-    records: list[FieldCharacterization],
-    elig: list[EligibilityResult],
+    df: pd.DataFrame,
+    elig_df: pd.DataFrame,
+    sens_df: pd.DataFrame | None,
+    legacy_df: pd.DataFrame | None,
     candidates: set[int],
     figures: dict[str, Path],
     out_path: Path,
     *,
-    snapshot_utc: str,
+    provenance: dict[str, str],
     results_dir: Path,
 ) -> Path:
-    by_id = {r.field_id: r for r in records}
-    elig_by_id = {e.field_id: e for e in elig}
-    eligible = [e for e in elig if e.eligible]
-    eligible_sorted = sorted(
-        eligible, key=lambda e: by_id[e.field_id].min_eligible_per_cut, reverse=True
+    merged = df.merge(
+        elig_df[["field_id", "semantic_eligible", "bibliometric_ready", "failed_semantic_criteria"]],
+        on="field_id", how="left",
     )
+    name_by_id = dict(zip(df["field_id"], df["display_name"]))
 
     def rel(p: Path) -> str:
         try:
@@ -158,99 +130,152 @@ def write_markdown_report(
     lines: list[str] = []
     lines.append("# Stage 1 — preliminary results: field characterization & eligibility\n")
     lines.append(
-        f"_Data snapshot (UTC): {snapshot_utc}. Source: OpenAlex aggregate queries._\n"
+        f"_Rendered from frozen artifacts. Collection run: {provenance.get('run_utc', 'n/a')} "
+        f"(code run time, NOT a frozen DB snapshot). Corpus types: "
+        f"{provenance.get('corpus_types', 'n/a')}. git: {provenance.get('git_commit', 'n/a')}._\n"
     )
     lines.append(
-        "> Feasibility indicators only. Eligibility is decided on data quality, "
-        "never on model accuracy. No predictive claim is made here.\n"
+        "> Feasibility indicators only. Eligibility uses data quality, never model "
+        "accuracy. English-abstract figures are OpenAlex METADATA flags; see the "
+        "textual-quality sampling report for inspected text coverage.\n"
     )
 
+    elig = merged[merged["semantic_eligible"] == True]
+    elig = elig.sort_values("min_semantic_eligible_per_cut", ascending=False)
     lines.append("## Summary\n")
-    lines.append(f"- Fields characterized: **{len(records)}** of 26.")
-    lines.append(f"- Eligible under current thresholds: **{len(eligible)}**.")
+    lines.append(f"- Fields characterized: **{len(df)}** of 26.")
+    lines.append(f"- Semantic-eligible: **{int(merged['semantic_eligible'].sum())}**; "
+                 f"bibliometric-ready: **{int(merged['bibliometric_ready'].sum())}**.")
+    cand_rows = merged[merged["field_id"].isin(candidates)]
     cand_status = ", ".join(
-        f"{by_id[c].display_name} ({c}): "
-        f"{'eligible' if elig_by_id[c].eligible else 'INELIGIBLE'}"
-        for c in sorted(candidates) if c in by_id
+        f"{r.display_name} ({r.field_id}): "
+        f"{'semantic-eligible' if r.semantic_eligible else 'INELIGIBLE'}"
+        f"{'' if r.bibliometric_ready else ' (not bibliometric-ready)' if r.semantic_eligible else ''}"
+        for r in cand_rows.itertuples()
     )
     lines.append(f"- Project candidates — {cand_status}.\n")
 
-    lines.append("## Eligible fields, ranked by min eligible volume per cut\n")
-    lines.append("| field | id | domain | min eligible/cut | en-abstract | with-refs | subfields |")
-    lines.append("|---|---|---|---:|---:|---:|---:|")
-    for e in eligible_sorted:
-        r = by_id[e.field_id]
+    lines.append("## Semantic-eligible fields, ranked by min semantic volume per cut\n")
+    lines.append("| field | id | domain | min semantic/cut | en-abstract | with-refs | biblio-ready | subfields | entropy |")
+    lines.append("|---|---|---|---:|---:|---:|:--:|---:|---:|")
+    for r in elig.itertuples():
         lines.append(
-            f"| {r.display_name} | {r.field_id} | {r.domain} | {r.min_eligible_per_cut:,} | "
+            f"| {r.display_name} | {r.field_id} | {r.domain} | {int(r.min_semantic_eligible_per_cut):,} | "
             f"{r.english_abstract_fraction:.2f} | {r.with_references_fraction:.2f} | "
-            f"{r.subfield_diversity} |"
+            f"{'yes' if r.bibliometric_ready else 'no'} | {int(r.subfield_count)} | {r.subfield_entropy:.2f} |"
         )
     lines.append("")
 
-    lines.append("## Candidate fields flagged ineligible (criterion detail)\n")
-    flagged = [c for c in sorted(candidates) if c in elig_by_id and not elig_by_id[c].eligible]
-    if flagged:
-        for c in flagged:
-            e = elig_by_id[c]
-            lines.append(f"- **{by_id[c].display_name} ({c})**: {'; '.join(e.reasons)}")
+    flagged = cand_rows[cand_rows["semantic_eligible"] == False]
+    lines.append("## Candidate fields flagged ineligible\n")
+    if len(flagged):
+        for r in flagged.itertuples():
+            lines.append(f"- **{r.display_name} ({r.field_id})**: {r.failed_semantic_criteria}")
+        lines.append("")
+    else:
+        lines.append("- None. All project candidates are semantic-eligible under the "
+                     "corrected criteria (subfield count is no longer a gate).\n")
+
+    if sens_df is not None and len(sens_df):
+        lines.append("## Eligibility sensitivity (how the eligible set shifts per criterion)\n")
+        lines.append("| scenario | n semantic-eligible | fields |")
+        lines.append("|---|---:|---|")
+        for r in sens_df.itertuples():
+            lines.append(f"| {r.scenario} | {r.n_semantic_eligible} | {r.fields} |")
+        lines.append("")
+
+    if legacy_df is not None and len(legacy_df):
+        n_legacy = int(legacy_df["legacy_eligible"].sum()) if "legacy_eligible" in legacy_df else None
+        lines.append("## Legacy-criteria reproduction (on the ORIGINAL cached data)\n")
         lines.append(
-            "\n> These thresholds are development placeholders (see config "
-            "`characterization.eligibility`). A flagged project candidate is reported, "
-            "not silently dropped; the criterion should be reviewed before the main study.\n"
+            f"- Audited criteria incl. the `subfield >= 10` gate reproduced **{n_legacy}** "
+            "eligible fields on the original results CSV (see `legacy/`). Removing only "
+            "that gate raises the count — confirming the audit's observation that the "
+            "subfield gate dominated the old selection.\n"
+        )
+
+    # Domain recommendation — evidence-based, privileging data quality + diversity.
+    lines.append("## Domain recommendation (preliminary)\n")
+    cand_elig = cand_rows[cand_rows["semantic_eligible"] == True]
+    if len(cand_elig):
+        n_domains = cand_elig["domain"].nunique()
+        lines.append(
+            "The three project candidates are all semantic-eligible and bibliometric-ready, "
+            f"and span {n_domains} OpenAlex domain(s):\n"
+        )
+        for r in cand_elig.sort_values("min_semantic_eligible_per_cut", ascending=False).itertuples():
+            lines.append(
+                f"- **{r.display_name} ({r.field_id})** — {r.domain}; "
+                f"min semantic/cut {int(r.min_semantic_eligible_per_cut):,}, "
+                f"en-abstract {r.english_abstract_fraction:.2f}, refs {r.with_references_fraction:.2f}, "
+                f"subfield entropy {r.subfield_entropy:.2f}."
+            )
+        lines.append(
+            "\nThese remain the recommended candidates for the main evaluation on grounds of "
+            "coverage and disciplinary diversity. Open items before the choice is FIXED: "
+            "(a) confirm Computer Science's corpus-type decision — including conference-papers "
+            "roughly doubles its semantic corpus (see `field_corpus_sensitivity.csv`); "
+            "(b) the selection must be frozen BEFORE any predictive results are seen. "
+            "The pick is not forced here where information is still pending.\n"
         )
     else:
-        lines.append("- None.\n")
+        lines.append("- Candidates not all eligible; see the table above.\n")
 
     lines.append("## Figures\n")
     for caption, path in figures.items():
         lines.append(f"- {caption}: `{rel(path)}`")
     lines.append("")
 
-    lines.append("## Full tables\n")
+    lines.append("## Full tables & provenance\n")
     lines.append(f"- Per-field indicators: `{rel(results_dir / 'field_characterization.csv')}`")
+    lines.append(f"- Per-year counts: `{rel(results_dir / 'field_characterization_years.csv')}`")
     lines.append(f"- Eligibility verdicts: `{rel(results_dir / 'field_eligibility.csv')}`")
-    lines.append(f"- Run manifest: `{rel(results_dir / 'field_characterization.manifest.json')}`\n")
+    lines.append(f"- Sensitivity: `{rel(results_dir / 'field_sensitivity.csv')}`")
+    lines.append(f"- Run manifest (hashes, versions): `{rel(results_dir / 'field_characterization.manifest.json')}`\n")
 
     out_path.write_text("\n".join(lines), encoding="utf-8")
     return out_path
 
 
-def build_report(
-    records: list[FieldCharacterization],
-    elig: list[EligibilityResult],
+def build_report_from_frames(
+    df: pd.DataFrame,
+    years_df: pd.DataFrame,
+    elig_df: pd.DataFrame,
+    sens_df: pd.DataFrame | None,
+    legacy_df: pd.DataFrame | None,
     candidates: set[int],
     results_dir: Path,
     *,
-    snapshot_utc: str,
+    provenance: dict[str, str],
 ) -> dict[str, Path]:
-    """Generate all figures + the markdown report. Returns a map of output paths."""
     fig_dir = results_dir / "figures"
     fig_dir.mkdir(parents=True, exist_ok=True)
-    elig_by_id = {e.field_id: e.eligible for e in elig}
+    name_by_id = dict(zip(df["field_id"], df["display_name"]))
 
-    figures = {
-        "Eligible volume per cut (all fields)": plot_eligible_volume(
-            records, elig_by_id, candidates, fig_dir / "stage1_eligible_volume.png"
-        ),
-        "Documentary coverage scatter": plot_coverage_scatter(
-            records, elig_by_id, candidates, fig_dir / "stage1_coverage_scatter.png"
-        ),
-    }
-    # Candidates + top eligible fields for the yearly-volume plot.
-    top_eligible = [e.field_id for e in sorted(
-        (e for e in elig if e.eligible),
-        key=lambda e: next(r for r in records if r.field_id == e.field_id).min_eligible_per_cut,
-        reverse=True,
-    )][:4]
-    year_fields = list(dict.fromkeys(sorted(candidates) + top_eligible))
-    figures["Yearly eligible volume (candidates + top eligible)"] = plot_candidate_years(
-        records, year_fields, fig_dir / "stage1_candidate_years.png"
+    # Merge eligibility verdicts into the characterization frame for the figures.
+    plot_df = df.merge(
+        elig_df[["field_id", "semantic_eligible", "bibliometric_ready"]],
+        on="field_id", how="left",
     )
 
+    figures = {
+        "Semantic volume per cut (all fields)": plot_eligible_volume(
+            plot_df, candidates, fig_dir / "stage1_eligible_volume.png"),
+        "Coverage scatter": plot_coverage_scatter(
+            plot_df, candidates, fig_dir / "stage1_coverage_scatter.png"),
+    }
+    top_eligible = list(
+        df[df["field_id"].isin(elig_df[elig_df["semantic_eligible"] == True]["field_id"])]
+        .sort_values("min_semantic_eligible_per_cut", ascending=False)["field_id"].head(4)
+    )
+    year_fields = list(dict.fromkeys(sorted(candidates) + top_eligible))
+    figures["Yearly semantic volume (candidates + top eligible)"] = plot_candidate_years(
+        years_df, year_fields, name_by_id, fig_dir / "stage1_candidate_years.png")
+
     report_path = write_markdown_report(
-        records, elig, candidates, figures,
+        df, elig_df, sens_df, legacy_df, candidates, figures,
         results_dir / "preliminary_results_stage1.md",
-        snapshot_utc=snapshot_utc, results_dir=results_dir,
+        provenance=provenance, results_dir=results_dir,
     )
     out = {"report": report_path}
     out.update({f"figure::{k}": v for k, v in figures.items()})

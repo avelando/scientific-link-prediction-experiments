@@ -1,0 +1,6 @@
+# Keep secrets and local artifacts out of `git archive` exports.
+.env export-ignore
+.env.* export-ignore
+data/ export-ignore
+logs/ export-ignore
+results/figures/ export-ignore

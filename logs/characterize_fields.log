@@ -161,3 +161,200 @@
 2026-11-21 16:48:04,968 INFO slpe.characterization: field 34 (Veterinary): total=127869 en_abs=0.47 refs=0.76 subfields=2
 2026-11-21 16:48:16,061 INFO slpe.cli: done: 26 fields characterized, 6 eligible
 2026-11-21 16:48:16,061 INFO slpe.cli: request stats: {'n_requests': 0, 'n_cache_hits': 105, 'n_retries': 0, 'bytes_downloaded': 0, 'seconds_waiting': 0.0}
+2026-11-21 17:30:30,304 WARNING slpe.cli: temporal protocol advisory: T_tr(2017)+Δe(1)+Δd(3)=2021 > T_val(2019)
+2026-11-21 17:30:30,305 WARNING slpe.cli: temporal protocol advisory: T_val(2019)+Δe(1)+Δd(3)=2023 > T_te(2021)
+2026-11-21 17:30:33,282 INFO slpe.characterization: field 31 (Physics and Astronomy): type_total=1341337 semantic=0.69 refs=0.90 subfields=8 H=0.90
+2026-11-21 17:30:34,647 INFO slpe.characterization: field 33 (Social Sciences): type_total=9677382 semantic=0.34 refs=0.61 subfields=22 H=0.76
+2026-11-21 17:30:36,049 INFO slpe.characterization: field 27 (Medicine): type_total=10339489 semantic=0.55 refs=0.77 subfields=42 H=0.90
+2026-11-21 17:30:37,357 INFO slpe.characterization: field 12 (Arts and Humanities): type_total=4635211 semantic=0.29 refs=0.50 subfields=13 H=0.88
+2026-11-21 17:30:38,701 INFO slpe.characterization: field 11 (Agricultural and Biological Sciences): type_total=3002988 semantic=0.54 refs=0.76 subfields=11 H=0.84
+2026-11-21 17:30:40,006 INFO slpe.characterization: field 22 (Engineering): type_total=5246353 semantic=0.53 refs=0.78 subfields=16 H=0.85
+2026-11-21 17:30:41,289 INFO slpe.characterization: field 17 (Computer Science): type_total=1974568 semantic=0.56 refs=0.77 subfields=11 H=0.88
+2026-11-21 17:30:42,602 INFO slpe.characterization: field 23 (Environmental Science): type_total=2105006 semantic=0.49 refs=0.79 subfields=11 H=0.93
+2026-11-21 17:30:43,881 INFO slpe.characterization: field 14 (Business, Management and Accounting): type_total=2463551 semantic=0.39 refs=0.65 subfields=9 H=0.91
+2026-11-21 17:30:45,247 INFO slpe.characterization: field 13 (Biochemistry, Genetics and Molecular Biology): type_total=1877536 semantic=0.63 refs=0.87 subfields=14 H=0.63
+2026-11-21 17:30:46,525 INFO slpe.characterization: field 19 (Earth and Planetary Sciences): type_total=913011 semantic=0.54 refs=0.83 subfields=8 H=0.97
+2026-11-21 17:30:47,789 INFO slpe.characterization: field 20 (Economics, Econometrics and Finance): type_total=1487127 semantic=0.42 refs=0.65 subfields=3 H=0.82
+2026-11-21 17:30:49,120 INFO slpe.characterization: field 25 (Materials Science): type_total=1818224 semantic=0.56 refs=0.85 subfields=8 H=0.80
+2026-11-21 17:30:50,661 INFO slpe.characterization: field 16 (Chemistry): type_total=1105135 semantic=0.63 refs=0.89 subfields=6 H=0.83
+2026-11-21 17:30:52,160 INFO slpe.characterization: field 32 (Psychology): type_total=1596235 semantic=0.44 refs=0.74 subfields=7 H=0.77
+2026-11-21 17:30:53,472 INFO slpe.characterization: field 26 (Mathematics): type_total=817161 semantic=0.59 refs=0.88 subfields=10 H=0.87
+2026-11-21 17:30:54,761 INFO slpe.characterization: field 28 (Neuroscience): type_total=641254 semantic=0.59 refs=0.82 subfields=8 H=0.74
+2026-11-21 17:30:55,976 INFO slpe.characterization: field 24 (Immunology and Microbiology): type_total=561850 semantic=0.60 refs=0.84 subfields=5 H=0.88
+2026-11-21 17:30:57,197 INFO slpe.characterization: field 36 (Health Professions): type_total=722297 semantic=0.47 refs=0.69 subfields=10 H=0.76
+2026-11-21 17:30:58,416 INFO slpe.characterization: field 21 (Energy): type_total=676212 semantic=0.47 refs=0.80 subfields=5 H=0.64
+2026-11-21 17:30:59,630 INFO slpe.characterization: field 18 (Decision Sciences): type_total=482969 semantic=0.54 refs=0.75 subfields=4 H=0.59
+2026-11-21 17:31:00,860 INFO slpe.characterization: field 29 (Nursing): type_total=375228 semantic=0.48 refs=0.73 subfields=4 H=0.73
+2026-11-21 17:31:02,150 INFO slpe.characterization: field 35 (Dentistry): type_total=430241 semantic=0.56 refs=0.80 subfields=4 H=0.89
+2026-11-21 17:31:03,393 INFO slpe.characterization: field 30 (Pharmacology, Toxicology and Pharmaceutics): type_total=284123 semantic=0.60 refs=0.81 subfields=4 H=0.99
+2026-11-21 17:31:04,618 INFO slpe.characterization: field 15 (Chemical Engineering): type_total=265079 semantic=0.50 refs=0.86 subfields=5 H=0.86
+2026-11-21 17:31:05,889 INFO slpe.characterization: field 34 (Veterinary): type_total=89903 semantic=0.50 refs=0.85 subfields=2 H=0.72
+2026-11-21 17:31:07,929 INFO slpe.characterization: field 31 (Physics and Astronomy): type_total=1646616 semantic=0.70 refs=0.88 subfields=8 H=0.90
+2026-11-21 17:31:09,318 INFO slpe.characterization: field 33 (Social Sciences): type_total=10341193 semantic=0.35 refs=0.61 subfields=22 H=0.76
+2026-11-21 17:31:10,656 INFO slpe.characterization: field 27 (Medicine): type_total=10645997 semantic=0.55 refs=0.77 subfields=42 H=0.90
+2026-11-21 17:31:11,941 INFO slpe.characterization: field 12 (Arts and Humanities): type_total=4844560 semantic=0.29 refs=0.50 subfields=13 H=0.88
+2026-11-21 17:31:13,332 INFO slpe.characterization: field 11 (Agricultural and Biological Sciences): type_total=3176055 semantic=0.54 refs=0.76 subfields=11 H=0.84
+2026-11-21 17:31:14,673 INFO slpe.characterization: field 22 (Engineering): type_total=7071470 semantic=0.60 refs=0.81 subfields=16 H=0.84
+2026-11-21 17:31:15,941 INFO slpe.characterization: field 17 (Computer Science): type_total=3295631 semantic=0.64 refs=0.85 subfields=11 H=0.88
+2026-11-21 17:31:17,177 INFO slpe.characterization: field 23 (Environmental Science): type_total=2303977 semantic=0.50 refs=0.78 subfields=11 H=0.93
+2026-11-21 17:31:18,450 INFO slpe.characterization: field 14 (Business, Management and Accounting): type_total=2648728 semantic=0.40 refs=0.66 subfields=9 H=0.91
+2026-11-21 17:31:19,736 INFO slpe.characterization: field 13 (Biochemistry, Genetics and Molecular Biology): type_total=1955190 semantic=0.63 refs=0.86 subfields=14 H=0.63
+2026-11-21 17:31:21,035 INFO slpe.characterization: field 19 (Earth and Planetary Sciences): type_total=1109540 semantic=0.54 refs=0.79 subfields=8 H=0.97
+2026-11-21 17:31:22,265 INFO slpe.characterization: field 20 (Economics, Econometrics and Finance): type_total=1560387 semantic=0.43 refs=0.66 subfields=3 H=0.82
+2026-11-21 17:31:23,539 INFO slpe.characterization: field 25 (Materials Science): type_total=2003533 semantic=0.57 refs=0.85 subfields=8 H=0.80
+2026-11-21 17:31:24,814 INFO slpe.characterization: field 16 (Chemistry): type_total=1158186 semantic=0.63 refs=0.88 subfields=6 H=0.84
+2026-11-21 17:31:26,067 INFO slpe.characterization: field 32 (Psychology): type_total=1711477 semantic=0.45 refs=0.74 subfields=7 H=0.78
+2026-11-21 17:31:27,301 INFO slpe.characterization: field 26 (Mathematics): type_total=882908 semantic=0.59 refs=0.88 subfields=10 H=0.88
+2026-11-21 17:31:28,515 INFO slpe.characterization: field 28 (Neuroscience): type_total=692516 semantic=0.59 refs=0.82 subfields=8 H=0.73
+2026-11-21 17:31:29,750 INFO slpe.characterization: field 24 (Immunology and Microbiology): type_total=576314 semantic=0.60 refs=0.83 subfields=5 H=0.88
+2026-11-21 17:31:30,993 INFO slpe.characterization: field 36 (Health Professions): type_total=776761 semantic=0.48 refs=0.69 subfields=10 H=0.77
+2026-11-21 17:31:32,205 INFO slpe.characterization: field 21 (Energy): type_total=816828 semantic=0.52 refs=0.80 subfields=5 H=0.66
+2026-11-21 17:31:33,434 INFO slpe.characterization: field 18 (Decision Sciences): type_total=567735 semantic=0.56 refs=0.77 subfields=4 H=0.58
+2026-11-21 17:31:34,671 INFO slpe.characterization: field 29 (Nursing): type_total=386967 semantic=0.48 refs=0.73 subfields=4 H=0.72
+2026-11-21 17:31:35,913 INFO slpe.characterization: field 35 (Dentistry): type_total=439054 semantic=0.56 refs=0.79 subfields=4 H=0.89
+2026-11-21 17:31:37,227 INFO slpe.characterization: field 30 (Pharmacology, Toxicology and Pharmaceutics): type_total=293122 semantic=0.60 refs=0.81 subfields=4 H=0.99
+2026-11-21 17:31:38,734 INFO slpe.characterization: field 15 (Chemical Engineering): type_total=295293 semantic=0.52 refs=0.84 subfields=5 H=0.84
+2026-11-21 17:31:39,942 INFO slpe.characterization: field 34 (Veterinary): type_total=93161 semantic=0.50 refs=0.84 subfields=2 H=0.73
+2026-11-21 17:31:40,488 INFO slpe.cli: legacy reproduction: 6 eligible with gate, 14 without
+2026-11-21 17:31:59,220 WARNING slpe.cli: temporal protocol advisory: T_tr(2017)+Δe(1)+Δd(3)=2021 > T_val(2019)
+2026-11-21 17:31:59,220 WARNING slpe.cli: temporal protocol advisory: T_val(2019)+Δe(1)+Δd(3)=2023 > T_te(2021)
+2026-11-21 17:32:00,545 INFO slpe.characterization: field 31 (Physics and Astronomy): type_total=1341337 semantic=0.69 refs=0.90 subfields=8 H=0.90
+2026-11-21 17:32:00,627 INFO slpe.characterization: field 33 (Social Sciences): type_total=9677382 semantic=0.34 refs=0.61 subfields=22 H=0.76
+2026-11-21 17:32:00,728 INFO slpe.characterization: field 27 (Medicine): type_total=10339489 semantic=0.55 refs=0.77 subfields=42 H=0.90
+2026-11-21 17:32:00,842 INFO slpe.characterization: field 12 (Arts and Humanities): type_total=4635211 semantic=0.29 refs=0.50 subfields=13 H=0.88
+2026-11-21 17:32:00,950 INFO slpe.characterization: field 11 (Agricultural and Biological Sciences): type_total=3002988 semantic=0.54 refs=0.76 subfields=11 H=0.84
+2026-11-21 17:32:01,052 INFO slpe.characterization: field 22 (Engineering): type_total=5246353 semantic=0.53 refs=0.78 subfields=16 H=0.85
+2026-11-21 17:32:01,127 INFO slpe.characterization: field 17 (Computer Science): type_total=1974568 semantic=0.56 refs=0.77 subfields=11 H=0.88
+2026-11-21 17:32:01,215 INFO slpe.characterization: field 23 (Environmental Science): type_total=2105006 semantic=0.49 refs=0.79 subfields=11 H=0.93
+2026-11-21 17:32:01,293 INFO slpe.characterization: field 14 (Business, Management and Accounting): type_total=2463551 semantic=0.39 refs=0.65 subfields=9 H=0.91
+2026-11-21 17:32:01,412 INFO slpe.characterization: field 13 (Biochemistry, Genetics and Molecular Biology): type_total=1877536 semantic=0.63 refs=0.87 subfields=14 H=0.63
+2026-11-21 17:32:01,502 INFO slpe.characterization: field 19 (Earth and Planetary Sciences): type_total=913011 semantic=0.54 refs=0.83 subfields=8 H=0.97
+2026-11-21 17:32:01,597 INFO slpe.characterization: field 20 (Economics, Econometrics and Finance): type_total=1487127 semantic=0.42 refs=0.65 subfields=3 H=0.82
+2026-11-21 17:32:01,687 INFO slpe.characterization: field 25 (Materials Science): type_total=1818224 semantic=0.56 refs=0.85 subfields=8 H=0.80
+2026-11-21 17:32:01,770 INFO slpe.characterization: field 16 (Chemistry): type_total=1105135 semantic=0.63 refs=0.89 subfields=6 H=0.83
+2026-11-21 17:32:01,844 INFO slpe.characterization: field 32 (Psychology): type_total=1596235 semantic=0.44 refs=0.74 subfields=7 H=0.77
+2026-11-21 17:32:01,915 INFO slpe.characterization: field 26 (Mathematics): type_total=817161 semantic=0.59 refs=0.88 subfields=10 H=0.87
+2026-11-21 17:32:01,990 INFO slpe.characterization: field 28 (Neuroscience): type_total=641254 semantic=0.59 refs=0.82 subfields=8 H=0.74
+2026-11-21 17:32:02,063 INFO slpe.characterization: field 24 (Immunology and Microbiology): type_total=561850 semantic=0.60 refs=0.84 subfields=5 H=0.88
+2026-11-21 17:32:02,155 INFO slpe.characterization: field 36 (Health Professions): type_total=722297 semantic=0.47 refs=0.69 subfields=10 H=0.76
+2026-11-21 17:32:02,234 INFO slpe.characterization: field 21 (Energy): type_total=676212 semantic=0.47 refs=0.80 subfields=5 H=0.64
+2026-11-21 17:32:02,303 INFO slpe.characterization: field 18 (Decision Sciences): type_total=482969 semantic=0.54 refs=0.75 subfields=4 H=0.59
+2026-11-21 17:32:02,382 INFO slpe.characterization: field 29 (Nursing): type_total=375228 semantic=0.48 refs=0.73 subfields=4 H=0.73
+2026-11-21 17:32:02,477 INFO slpe.characterization: field 35 (Dentistry): type_total=430241 semantic=0.56 refs=0.80 subfields=4 H=0.89
+2026-11-21 17:32:02,578 INFO slpe.characterization: field 30 (Pharmacology, Toxicology and Pharmaceutics): type_total=284123 semantic=0.60 refs=0.81 subfields=4 H=0.99
+2026-11-21 17:32:02,663 INFO slpe.characterization: field 15 (Chemical Engineering): type_total=265079 semantic=0.50 refs=0.86 subfields=5 H=0.86
+2026-11-21 17:32:02,737 INFO slpe.characterization: field 34 (Veterinary): type_total=89903 semantic=0.50 refs=0.85 subfields=2 H=0.72
+2026-11-21 17:32:03,553 INFO slpe.characterization: field 31 (Physics and Astronomy): type_total=1646616 semantic=0.70 refs=0.88 subfields=8 H=0.90
+2026-11-21 17:32:03,650 INFO slpe.characterization: field 33 (Social Sciences): type_total=10341193 semantic=0.35 refs=0.61 subfields=22 H=0.76
+2026-11-21 17:32:03,753 INFO slpe.characterization: field 27 (Medicine): type_total=10645997 semantic=0.55 refs=0.77 subfields=42 H=0.90
+2026-11-21 17:32:03,853 INFO slpe.characterization: field 12 (Arts and Humanities): type_total=4844560 semantic=0.29 refs=0.50 subfields=13 H=0.88
+2026-11-21 17:32:03,957 INFO slpe.characterization: field 11 (Agricultural and Biological Sciences): type_total=3176055 semantic=0.54 refs=0.76 subfields=11 H=0.84
+2026-11-21 17:32:04,059 INFO slpe.characterization: field 22 (Engineering): type_total=7071470 semantic=0.60 refs=0.81 subfields=16 H=0.84
+2026-11-21 17:32:04,134 INFO slpe.characterization: field 17 (Computer Science): type_total=3295631 semantic=0.64 refs=0.85 subfields=11 H=0.88
+2026-11-21 17:32:04,220 INFO slpe.characterization: field 23 (Environmental Science): type_total=2303977 semantic=0.50 refs=0.78 subfields=11 H=0.93
+2026-11-21 17:32:04,297 INFO slpe.characterization: field 14 (Business, Management and Accounting): type_total=2648728 semantic=0.40 refs=0.66 subfields=9 H=0.91
+2026-11-21 17:32:04,388 INFO slpe.characterization: field 13 (Biochemistry, Genetics and Molecular Biology): type_total=1955190 semantic=0.63 refs=0.86 subfields=14 H=0.63
+2026-11-21 17:32:04,460 INFO slpe.characterization: field 19 (Earth and Planetary Sciences): type_total=1109540 semantic=0.54 refs=0.79 subfields=8 H=0.97
+2026-11-21 17:32:04,534 INFO slpe.characterization: field 20 (Economics, Econometrics and Finance): type_total=1560387 semantic=0.43 refs=0.66 subfields=3 H=0.82
+2026-11-21 17:32:04,616 INFO slpe.characterization: field 25 (Materials Science): type_total=2003533 semantic=0.57 refs=0.85 subfields=8 H=0.80
+2026-11-21 17:32:04,709 INFO slpe.characterization: field 16 (Chemistry): type_total=1158186 semantic=0.63 refs=0.88 subfields=6 H=0.84
+2026-11-21 17:32:04,784 INFO slpe.characterization: field 32 (Psychology): type_total=1711477 semantic=0.45 refs=0.74 subfields=7 H=0.78
+2026-11-21 17:32:04,865 INFO slpe.characterization: field 26 (Mathematics): type_total=882908 semantic=0.59 refs=0.88 subfields=10 H=0.88
+2026-11-21 17:32:04,959 INFO slpe.characterization: field 28 (Neuroscience): type_total=692516 semantic=0.59 refs=0.82 subfields=8 H=0.73
+2026-11-21 17:32:05,029 INFO slpe.characterization: field 24 (Immunology and Microbiology): type_total=576314 semantic=0.60 refs=0.83 subfields=5 H=0.88
+2026-11-21 17:32:05,116 INFO slpe.characterization: field 36 (Health Professions): type_total=776761 semantic=0.48 refs=0.69 subfields=10 H=0.77
+2026-11-21 17:32:05,203 INFO slpe.characterization: field 21 (Energy): type_total=816828 semantic=0.52 refs=0.80 subfields=5 H=0.66
+2026-11-21 17:32:05,285 INFO slpe.characterization: field 18 (Decision Sciences): type_total=567735 semantic=0.56 refs=0.77 subfields=4 H=0.58
+2026-11-21 17:32:05,360 INFO slpe.characterization: field 29 (Nursing): type_total=386967 semantic=0.48 refs=0.73 subfields=4 H=0.72
+2026-11-21 17:32:05,439 INFO slpe.characterization: field 35 (Dentistry): type_total=439054 semantic=0.56 refs=0.79 subfields=4 H=0.89
+2026-11-21 17:32:05,531 INFO slpe.characterization: field 30 (Pharmacology, Toxicology and Pharmaceutics): type_total=293122 semantic=0.60 refs=0.81 subfields=4 H=0.99
+2026-11-21 17:32:05,605 INFO slpe.characterization: field 15 (Chemical Engineering): type_total=295293 semantic=0.52 refs=0.84 subfields=5 H=0.84
+2026-11-21 17:32:05,696 INFO slpe.characterization: field 34 (Veterinary): type_total=93161 semantic=0.50 refs=0.84 subfields=2 H=0.73
+2026-11-21 17:32:05,776 INFO slpe.cli: legacy reproduction: 6 eligible with gate, 14 without
+2026-11-21 17:32:06,943 INFO slpe.cli: done: 26 fields, 16 semantic-eligible. stats={'n_requests': 0, 'n_cache_hits': 262, 'n_retries': 0, 'n_network_errors': 0, 'bytes_downloaded': 0, 'seconds_waiting': 0.0}
+2026-11-21 17:35:50,154 WARNING slpe.cli: temporal protocol advisory: T_tr(2017)+Δe(1)+Δd(3)=2021 > T_val(2019)
+2026-11-21 17:35:50,155 WARNING slpe.cli: temporal protocol advisory: T_val(2019)+Δe(1)+Δd(3)=2023 > T_te(2021)
+2026-11-21 17:35:51,625 INFO slpe.characterization: field 31 (Physics and Astronomy): type_total=1341337 semantic=0.69 refs=0.90 subfields=8 H=0.90
+2026-11-21 17:35:51,629 INFO slpe.characterization: field 33 (Social Sciences): type_total=9677382 semantic=0.34 refs=0.61 subfields=22 H=0.76
+2026-11-21 17:35:51,633 INFO slpe.characterization: field 27 (Medicine): type_total=10339489 semantic=0.55 refs=0.77 subfields=42 H=0.90
+2026-11-21 17:35:51,636 INFO slpe.characterization: field 12 (Arts and Humanities): type_total=4635211 semantic=0.29 refs=0.50 subfields=13 H=0.88
+2026-11-21 17:35:51,639 INFO slpe.characterization: field 11 (Agricultural and Biological Sciences): type_total=3002988 semantic=0.54 refs=0.76 subfields=11 H=0.84
+2026-11-21 17:35:51,642 INFO slpe.characterization: field 22 (Engineering): type_total=5246353 semantic=0.53 refs=0.78 subfields=16 H=0.85
+2026-11-21 17:35:51,646 INFO slpe.characterization: field 17 (Computer Science): type_total=1974568 semantic=0.56 refs=0.77 subfields=11 H=0.88
+2026-11-21 17:35:51,649 INFO slpe.characterization: field 23 (Environmental Science): type_total=2105006 semantic=0.49 refs=0.79 subfields=11 H=0.93
+2026-11-21 17:35:51,652 INFO slpe.characterization: field 14 (Business, Management and Accounting): type_total=2463551 semantic=0.39 refs=0.65 subfields=9 H=0.91
+2026-11-21 17:35:51,655 INFO slpe.characterization: field 13 (Biochemistry, Genetics and Molecular Biology): type_total=1877536 semantic=0.63 refs=0.87 subfields=14 H=0.63
+2026-11-21 17:35:51,659 INFO slpe.characterization: field 19 (Earth and Planetary Sciences): type_total=913011 semantic=0.54 refs=0.83 subfields=8 H=0.97
+2026-11-21 17:35:51,662 INFO slpe.characterization: field 20 (Economics, Econometrics and Finance): type_total=1487127 semantic=0.42 refs=0.65 subfields=3 H=0.82
+2026-11-21 17:35:51,665 INFO slpe.characterization: field 25 (Materials Science): type_total=1818224 semantic=0.56 refs=0.85 subfields=8 H=0.80
+2026-11-21 17:35:51,668 INFO slpe.characterization: field 16 (Chemistry): type_total=1105135 semantic=0.63 refs=0.89 subfields=6 H=0.83
+2026-11-21 17:35:51,670 INFO slpe.characterization: field 32 (Psychology): type_total=1596235 semantic=0.44 refs=0.74 subfields=7 H=0.77
+2026-11-21 17:35:51,674 INFO slpe.characterization: field 26 (Mathematics): type_total=817161 semantic=0.59 refs=0.88 subfields=10 H=0.87
+2026-11-21 17:35:51,677 INFO slpe.characterization: field 28 (Neuroscience): type_total=641254 semantic=0.59 refs=0.82 subfields=8 H=0.74
+2026-11-21 17:35:51,679 INFO slpe.characterization: field 24 (Immunology and Microbiology): type_total=561850 semantic=0.60 refs=0.84 subfields=5 H=0.88
+2026-11-21 17:35:51,682 INFO slpe.characterization: field 36 (Health Professions): type_total=722297 semantic=0.47 refs=0.69 subfields=10 H=0.76
+2026-11-21 17:35:51,685 INFO slpe.characterization: field 21 (Energy): type_total=676212 semantic=0.47 refs=0.80 subfields=5 H=0.64
+2026-11-21 17:35:51,688 INFO slpe.characterization: field 18 (Decision Sciences): type_total=482969 semantic=0.54 refs=0.75 subfields=4 H=0.59
+2026-11-21 17:35:51,691 INFO slpe.characterization: field 29 (Nursing): type_total=375228 semantic=0.48 refs=0.73 subfields=4 H=0.73
+2026-11-21 17:35:51,693 INFO slpe.characterization: field 35 (Dentistry): type_total=430241 semantic=0.56 refs=0.80 subfields=4 H=0.89
+2026-11-21 17:35:51,696 INFO slpe.characterization: field 30 (Pharmacology, Toxicology and Pharmaceutics): type_total=284123 semantic=0.60 refs=0.81 subfields=4 H=0.99
+2026-11-21 17:35:51,698 INFO slpe.characterization: field 15 (Chemical Engineering): type_total=265079 semantic=0.50 refs=0.86 subfields=5 H=0.86
+2026-11-21 17:35:51,701 INFO slpe.characterization: field 34 (Veterinary): type_total=89903 semantic=0.50 refs=0.85 subfields=2 H=0.72
+2026-11-21 17:35:52,896 INFO slpe.cli: legacy reproduction: 6 eligible with gate, 14 without
+2026-11-21 17:35:54,157 INFO slpe.cli: done: 26 fields, 16 semantic-eligible. stats={'n_requests': 0, 'n_cache_hits': 131, 'n_retries': 0, 'n_network_errors': 0, 'bytes_downloaded': 0, 'seconds_waiting': 0.0}
+2026-11-21 17:40:56,947 WARNING slpe.cli: temporal protocol advisory: T_tr(2017)+Δe(1)+Δd(3)=2021 > T_val(2019)
+2026-11-21 17:40:56,948 WARNING slpe.cli: temporal protocol advisory: T_val(2019)+Δe(1)+Δd(3)=2023 > T_te(2021)
+2026-11-21 17:40:57,874 INFO slpe.characterization: field 31 (Physics and Astronomy): type_total=1341337 semantic=0.69 refs=0.90 subfields=8 H=0.90
+2026-11-21 17:40:57,883 INFO slpe.characterization: field 33 (Social Sciences): type_total=9677382 semantic=0.34 refs=0.61 subfields=22 H=0.76
+2026-11-21 17:40:57,888 INFO slpe.characterization: field 27 (Medicine): type_total=10339489 semantic=0.55 refs=0.77 subfields=42 H=0.90
+2026-11-21 17:40:57,908 INFO slpe.characterization: field 12 (Arts and Humanities): type_total=4635211 semantic=0.29 refs=0.50 subfields=13 H=0.88
+2026-11-21 17:40:57,927 INFO slpe.characterization: field 11 (Agricultural and Biological Sciences): type_total=3002988 semantic=0.54 refs=0.76 subfields=11 H=0.84
+2026-11-21 17:40:57,940 INFO slpe.characterization: field 22 (Engineering): type_total=5246353 semantic=0.53 refs=0.78 subfields=16 H=0.85
+2026-11-21 17:40:57,957 INFO slpe.characterization: field 17 (Computer Science): type_total=1974568 semantic=0.56 refs=0.77 subfields=11 H=0.88
+2026-11-21 17:40:57,966 INFO slpe.characterization: field 23 (Environmental Science): type_total=2105006 semantic=0.49 refs=0.79 subfields=11 H=0.93
+2026-11-21 17:40:57,976 INFO slpe.characterization: field 14 (Business, Management and Accounting): type_total=2463551 semantic=0.39 refs=0.65 subfields=9 H=0.91
+2026-11-21 17:40:57,994 INFO slpe.characterization: field 13 (Biochemistry, Genetics and Molecular Biology): type_total=1877536 semantic=0.63 refs=0.87 subfields=14 H=0.63
+2026-11-21 17:40:58,003 INFO slpe.characterization: field 19 (Earth and Planetary Sciences): type_total=913011 semantic=0.54 refs=0.83 subfields=8 H=0.97
+2026-11-21 17:40:58,021 INFO slpe.characterization: field 20 (Economics, Econometrics and Finance): type_total=1487127 semantic=0.42 refs=0.65 subfields=3 H=0.82
+2026-11-21 17:40:58,035 INFO slpe.characterization: field 25 (Materials Science): type_total=1818224 semantic=0.56 refs=0.85 subfields=8 H=0.80
+2026-11-21 17:40:58,053 INFO slpe.characterization: field 16 (Chemistry): type_total=1105135 semantic=0.63 refs=0.89 subfields=6 H=0.83
+2026-11-21 17:40:58,063 INFO slpe.characterization: field 32 (Psychology): type_total=1596235 semantic=0.44 refs=0.74 subfields=7 H=0.77
+2026-11-21 17:40:58,073 INFO slpe.characterization: field 26 (Mathematics): type_total=817161 semantic=0.59 refs=0.88 subfields=10 H=0.87
+2026-11-21 17:40:58,088 INFO slpe.characterization: field 28 (Neuroscience): type_total=641254 semantic=0.59 refs=0.82 subfields=8 H=0.74
+2026-11-21 17:40:58,108 INFO slpe.characterization: field 24 (Immunology and Microbiology): type_total=561850 semantic=0.60 refs=0.84 subfields=5 H=0.88
+2026-11-21 17:40:58,131 INFO slpe.characterization: field 36 (Health Professions): type_total=722297 semantic=0.47 refs=0.69 subfields=10 H=0.76
+2026-11-21 17:40:58,145 INFO slpe.characterization: field 21 (Energy): type_total=676212 semantic=0.47 refs=0.80 subfields=5 H=0.64
+2026-11-21 17:40:58,156 INFO slpe.characterization: field 18 (Decision Sciences): type_total=482969 semantic=0.54 refs=0.75 subfields=4 H=0.59
+2026-11-21 17:40:58,174 INFO slpe.characterization: field 29 (Nursing): type_total=375228 semantic=0.48 refs=0.73 subfields=4 H=0.73
+2026-11-21 17:40:58,184 INFO slpe.characterization: field 35 (Dentistry): type_total=430241 semantic=0.56 refs=0.80 subfields=4 H=0.89
+2026-11-21 17:40:58,195 INFO slpe.characterization: field 30 (Pharmacology, Toxicology and Pharmaceutics): type_total=284123 semantic=0.60 refs=0.81 subfields=4 H=0.99
+2026-11-21 17:40:58,205 INFO slpe.characterization: field 15 (Chemical Engineering): type_total=265079 semantic=0.50 refs=0.86 subfields=5 H=0.86
+2026-11-21 17:40:58,213 INFO slpe.characterization: field 34 (Veterinary): type_total=89903 semantic=0.50 refs=0.85 subfields=2 H=0.72
+2026-11-21 17:40:59,242 INFO slpe.characterization: field 31 (Physics and Astronomy): type_total=1646616 semantic=0.70 refs=0.88 subfields=8 H=0.90
+2026-11-21 17:40:59,245 INFO slpe.characterization: field 33 (Social Sciences): type_total=10341193 semantic=0.35 refs=0.61 subfields=22 H=0.76
+2026-11-21 17:40:59,250 INFO slpe.characterization: field 27 (Medicine): type_total=10645997 semantic=0.55 refs=0.77 subfields=42 H=0.90
+2026-11-21 17:40:59,253 INFO slpe.characterization: field 12 (Arts and Humanities): type_total=4844560 semantic=0.29 refs=0.50 subfields=13 H=0.88
+2026-11-21 17:40:59,256 INFO slpe.characterization: field 11 (Agricultural and Biological Sciences): type_total=3176055 semantic=0.54 refs=0.76 subfields=11 H=0.84
+2026-11-21 17:40:59,259 INFO slpe.characterization: field 22 (Engineering): type_total=7071470 semantic=0.60 refs=0.81 subfields=16 H=0.84
+2026-11-21 17:40:59,265 INFO slpe.characterization: field 17 (Computer Science): type_total=3295631 semantic=0.64 refs=0.85 subfields=11 H=0.88
+2026-11-21 17:40:59,268 INFO slpe.characterization: field 23 (Environmental Science): type_total=2303977 semantic=0.50 refs=0.78 subfields=11 H=0.93
+2026-11-21 17:40:59,271 INFO slpe.characterization: field 14 (Business, Management and Accounting): type_total=2648728 semantic=0.40 refs=0.66 subfields=9 H=0.91
+2026-11-21 17:40:59,275 INFO slpe.characterization: field 13 (Biochemistry, Genetics and Molecular Biology): type_total=1955190 semantic=0.63 refs=0.86 subfields=14 H=0.63
+2026-11-21 17:40:59,278 INFO slpe.characterization: field 19 (Earth and Planetary Sciences): type_total=1109540 semantic=0.54 refs=0.79 subfields=8 H=0.97
+2026-11-21 17:40:59,284 INFO slpe.characterization: field 20 (Economics, Econometrics and Finance): type_total=1560387 semantic=0.43 refs=0.66 subfields=3 H=0.82
+2026-11-21 17:40:59,288 INFO slpe.characterization: field 25 (Materials Science): type_total=2003533 semantic=0.57 refs=0.85 subfields=8 H=0.80
+2026-11-21 17:40:59,292 INFO slpe.characterization: field 16 (Chemistry): type_total=1158186 semantic=0.63 refs=0.88 subfields=6 H=0.84
+2026-11-21 17:40:59,297 INFO slpe.characterization: field 32 (Psychology): type_total=1711477 semantic=0.45 refs=0.74 subfields=7 H=0.78
+2026-11-21 17:40:59,302 INFO slpe.characterization: field 26 (Mathematics): type_total=882908 semantic=0.59 refs=0.88 subfields=10 H=0.88
+2026-11-21 17:40:59,306 INFO slpe.characterization: field 28 (Neuroscience): type_total=692516 semantic=0.59 refs=0.82 subfields=8 H=0.73
+2026-11-21 17:40:59,309 INFO slpe.characterization: field 24 (Immunology and Microbiology): type_total=576314 semantic=0.60 refs=0.83 subfields=5 H=0.88
+2026-11-21 17:40:59,312 INFO slpe.characterization: field 36 (Health Professions): type_total=776761 semantic=0.48 refs=0.69 subfields=10 H=0.77
+2026-11-21 17:40:59,316 INFO slpe.characterization: field 21 (Energy): type_total=816828 semantic=0.52 refs=0.80 subfields=5 H=0.66
+2026-11-21 17:40:59,318 INFO slpe.characterization: field 18 (Decision Sciences): type_total=567735 semantic=0.56 refs=0.77 subfields=4 H=0.58
+2026-11-21 17:40:59,321 INFO slpe.characterization: field 29 (Nursing): type_total=386967 semantic=0.48 refs=0.73 subfields=4 H=0.72
+2026-11-21 17:40:59,324 INFO slpe.characterization: field 35 (Dentistry): type_total=439054 semantic=0.56 refs=0.79 subfields=4 H=0.89
+2026-11-21 17:40:59,327 INFO slpe.characterization: field 30 (Pharmacology, Toxicology and Pharmaceutics): type_total=293122 semantic=0.60 refs=0.81 subfields=4 H=0.99
+2026-11-21 17:40:59,331 INFO slpe.characterization: field 15 (Chemical Engineering): type_total=295293 semantic=0.52 refs=0.84 subfields=5 H=0.84
+2026-11-21 17:40:59,334 INFO slpe.characterization: field 34 (Veterinary): type_total=93161 semantic=0.50 refs=0.84 subfields=2 H=0.73
+2026-11-21 17:40:59,795 INFO slpe.cli: legacy reproduction: 6 eligible with gate, 14 without
+2026-11-21 17:41:00,989 INFO slpe.cli: done: 26 fields, 16 semantic-eligible. stats={'n_requests': 0, 'n_cache_hits': 262, 'n_retries': 0, 'n_network_errors': 0, 'bytes_downloaded': 0, 'seconds_waiting': 0.0}

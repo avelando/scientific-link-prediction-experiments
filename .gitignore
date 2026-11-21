@@ -20,6 +20,9 @@ data/openalex_cache/
 
 # Keep small curated results and manifests under results/ by exception (see results/.gitignore)
 
+# Logs
+logs/
+
 # Notebooks
 .ipynb_checkpoints/
 

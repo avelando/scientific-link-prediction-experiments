@@ -1,0 +1,36 @@
+{
+  "run_name": "weighted_field_attribution",
+  "run_utc": "2026-11-21T20:53:02.300774+00:00",
+  "temporal_mode": "retrospective_snapshot",
+  "params": {
+    "n_per_field": 500,
+    "corpus_filter": "type:article,has_abstract:true,language:en,from_publication_date:2013-01-01,to_publication_date:2022-12-31",
+    "seed": 20260101
+  },
+  "stats": {
+    "n_requests": 10,
+    "n_cache_hits": 0,
+    "n_retries": 0,
+    "n_network_errors": 0,
+    "bytes_downloaded": 2547685,
+    "seconds_waiting": 0.0
+  },
+  "python": "3.13.0",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "versions": {
+    "httpx": "0.28.1",
+    "pandas": "2.3.1",
+    "numpy": "2.3.2",
+    "pyarrow": "26.0.1",
+    "pyyaml": "6.0.3",
+    "matplotlib": "3.10.3",
+    "python-dotenv": "1.0.1",
+    "scientific-link-prediction-experiments": "0.1.0"
+  },
+  "git_commit": "fa8199af1471f667f38314e5d3eefc92de7050b0",
+  "config_sha256": null,
+  "artifact_hashes": {
+    "weighted_field_attribution.csv": "8355c8611b4e848aa246ab7296f8d26bc1ffde2413969cd7cf6e3c3b884fc8a0"
+  },
+  "errors": []
+}

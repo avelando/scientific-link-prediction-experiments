@@ -1,27 +1,27 @@
-field_id,display_name,domain,eligible,failed_criteria
-33,Social Sciences,Social Sciences,False,en-abstract fraction 0.33 < 0.50
-27,Medicine,Health Sciences,True,
-12,Arts and Humanities,Social Sciences,False,en-abstract fraction 0.28 < 0.50; with-references fraction 0.35 < 0.50
-22,Engineering,Physical Sciences,True,
-11,Agricultural and Biological Sciences,Life Sciences,True,
-17,Computer Science,Physical Sciences,True,
-14,"Business, Management and Accounting",Social Sciences,False,en-abstract fraction 0.36 < 0.50; subfield diversity 9 < 10
-23,Environmental Science,Physical Sciences,True,
-13,"Biochemistry, Genetics and Molecular Biology",Life Sciences,False,en-abstract fraction 0.49 < 0.50
-32,Psychology,Social Sciences,False,en-abstract fraction 0.42 < 0.50; subfield diversity 7 < 10
-20,"Economics, Econometrics and Finance",Social Sciences,False,en-abstract fraction 0.41 < 0.50; subfield diversity 3 < 10
-25,Materials Science,Physical Sciences,False,subfield diversity 8 < 10
-31,Physics and Astronomy,Physical Sciences,False,subfield diversity 8 < 10
-16,Chemistry,Physical Sciences,False,subfield diversity 6 < 10
-19,Earth and Planetary Sciences,Physical Sciences,False,en-abstract fraction 0.49 < 0.50; subfield diversity 8 < 10
-26,Mathematics,Physical Sciences,True,
-36,Health Professions,Health Sciences,False,en-abstract fraction 0.45 < 0.50
-28,Neuroscience,Life Sciences,False,subfield diversity 8 < 10
-21,Energy,Physical Sciences,False,en-abstract fraction 0.49 < 0.50; subfield diversity 5 < 10
-24,Immunology and Microbiology,Life Sciences,False,subfield diversity 5 < 10
-18,Decision Sciences,Social Sciences,False,subfield diversity 4 < 10
-35,Dentistry,Health Sciences,False,subfield diversity 4 < 10
-29,Nursing,Health Sciences,False,en-abstract fraction 0.45 < 0.50; subfield diversity 4 < 10
-30,"Pharmacology, Toxicology and Pharmaceutics",Life Sciences,False,subfield diversity 4 < 10
-15,Chemical Engineering,Physical Sciences,False,en-abstract fraction 0.49 < 0.50; subfield diversity 5 < 10
-34,Veterinary,Health Sciences,False,min eligible/cut 19632 < 20000; en-abstract fraction 0.47 < 0.50; subfield diversity 2 < 10
+field_id,display_name,domain,semantic_eligible,bibliometric_ready,failed_semantic_criteria,min_semantic_eligible_per_cut__value,min_semantic_eligible_per_cut__pass,min_english_abstract_fraction__value,min_english_abstract_fraction__pass,min_with_references_fraction__value,min_with_references_fraction__pass
+27,Medicine,Health Sciences,True,True,,2488766,True,0.552114906258907,True,0.7719244310237247,True
+33,Social Sciences,Social Sciences,False,False,min_english_abstract_fraction 0.3379 < 0.5,1364252,True,0.33786720416740806,False,0.6094263335443638,True
+22,Engineering,Physical Sciences,True,True,,1237935,True,0.5265453925803315,True,0.7839792531465808,True
+11,Agricultural and Biological Sciences,Life Sciences,True,True,,717397,True,0.5368722752138869,True,0.7645732191802489,True
+12,Arts and Humanities,Social Sciences,False,False,min_english_abstract_fraction 0.2912 < 0.5,588517,True,0.2912037877024368,False,0.5030808473311794,True
+13,"Biochemistry, Genetics and Molecular Biology",Life Sciences,True,True,,560969,True,0.6311133315153478,True,0.8691180466826113,True
+17,Computer Science,Physical Sciences,True,True,,485890,True,0.5600237621596218,True,0.7742658063582639,True
+25,Materials Science,Physical Sciences,True,True,,473198,True,0.5603995987293094,True,0.8549549920897567,True
+23,Environmental Science,Physical Sciences,False,False,min_english_abstract_fraction 0.487 < 0.5,462074,True,0.4869838850815627,False,0.7888321575176762,True
+31,Physics and Astronomy,Physical Sciences,True,True,,443018,True,0.6854369930897306,True,0.9028161783420092,True
+14,"Business, Management and Accounting",Social Sciences,False,False,min_english_abstract_fraction 0.3914 < 0.5,376007,True,0.39141710482145486,False,0.6489573524592545,True
+16,Chemistry,Physical Sciences,True,True,,329471,True,0.6301456383156809,True,0.889358927966272,True
+32,Psychology,Social Sciences,False,False,min_english_abstract_fraction 0.4449 < 0.5,290599,True,0.4448517918727506,False,0.7439570870089341,True
+20,"Economics, Econometrics and Finance",Social Sciences,False,False,min_english_abstract_fraction 0.4216 < 0.5,280891,True,0.4215504123050688,False,0.6517652763842341,True
+19,Earth and Planetary Sciences,Physical Sciences,True,True,,231729,True,0.5409255748287808,True,0.8262582739217326,True
+26,Mathematics,Physical Sciences,True,True,,213460,True,0.5862027189256462,True,0.877930449958457,True
+28,Neuroscience,Life Sciences,True,True,,177330,True,0.587505107180618,True,0.8236714975845411,True
+24,Immunology and Microbiology,Life Sciences,True,True,,160312,True,0.6002812138471122,True,0.8384785986218675,True
+36,Health Professions,Health Sciences,False,False,min_english_abstract_fraction 0.4729 < 0.5,142908,True,0.472870578169368,False,0.689152195998864,True
+21,Energy,Physical Sciences,False,False,min_english_abstract_fraction 0.4677 < 0.5,136421,True,0.46772166125416287,False,0.800761353109122,True
+18,Decision Sciences,Social Sciences,True,True,,116302,True,0.5352310396733537,True,0.7537756286266925,True
+35,Dentistry,Health Sciences,True,True,,100995,True,0.562296480344737,True,0.7969684569057097,True
+29,Nursing,Health Sciences,False,False,min_english_abstract_fraction 0.484 < 0.5,81769,True,0.4839510910699628,False,0.7343330102647694,True
+30,"Pharmacology, Toxicology and Pharmaceutics",Life Sciences,True,True,,75367,True,0.6027037585834304,True,0.80901297578865,True
+15,Chemical Engineering,Physical Sciences,False,False,min_english_abstract_fraction 0.4977 < 0.5,58355,True,0.49770068545603385,False,0.8601758508299856,True
+34,Veterinary,Health Sciences,True,True,,20148,True,0.5040321235108951,True,0.849560842123847,True

@@ -1,57 +1,106 @@
 """Reconstruct plain-text abstracts from OpenAlex's inverted index.
 
-OpenAlex does not store abstracts as text (for licensing reasons); it stores an
-``abstract_inverted_index`` mapping each token to the list of positions where it
-occurs. Reconstruction places every token at its positions and joins by spaces.
+OpenAlex stores abstracts as an ``abstract_inverted_index`` mapping each token to
+the positions where it occurs. Reconstruction places every token at its positions
+and joins by spaces.
 
-Edge cases handled:
-    * ``None`` / empty index -> ``None`` (absent, not an empty string).
-    * Positions with gaps (missing indices) -> gaps are skipped, not padded.
-    * Duplicate/overlapping positions -> last writer wins deterministically by
-      iterating tokens in insertion order; we instead build a position->token map,
-      which is order-independent and matches OpenAlex's intended layout.
+The reconstruction is diagnostic rather than silent: malformed indices (two tokens
+claiming the same position, negative/non-integer positions, pathologically large
+indices) are counted and optionally rejected, instead of being masked by a
+last-writer-wins overwrite.
 """
 
 from __future__ import annotations
 
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class AbstractDiagnostics:
+    n_tokens_placed: int
+    n_position_collisions: int   # positions claimed by >1 token
+    n_invalid_positions: int     # negative / non-integer positions skipped
+    truncated: bool              # input exceeded the position cap
+
+
+class MalformedAbstractError(ValueError):
+    """Raised in strict mode when the inverted index is malformed."""
+
+
+def reconstruct_with_diagnostics(
+    inverted_index: Mapping[str, Sequence[int]] | None,
+    *,
+    max_positions: int = 100_000,
+    strict: bool = False,
+) -> tuple[str | None, AbstractDiagnostics]:
+    """Rebuild abstract text and report integrity diagnostics.
+
+    Args:
+        inverted_index: ``token -> [positions]`` mapping, or ``None``.
+        max_positions: hard cap on positions consumed (memory guard); the scan
+            stops once this many valid positions are placed and marks ``truncated``.
+        strict: if True, raise :class:`MalformedAbstractError` on any collision or
+            invalid position.
+
+    Returns:
+        ``(text_or_None, diagnostics)``.
+    """
+    diag_zero = AbstractDiagnostics(0, 0, 0, False)
+    if not inverted_index:
+        return None, diag_zero
+
+    position_to_token: dict[int, str] = {}
+    collisions = 0
+    invalid = 0
+    truncated = False
+
+    for token, positions in inverted_index.items():
+        if positions is None:
+            continue
+        for pos in positions:
+            if not isinstance(pos, int) or isinstance(pos, bool) or pos < 0:
+                invalid += 1
+                continue
+            if pos in position_to_token and position_to_token[pos] != token:
+                collisions += 1
+            position_to_token[pos] = token
+            if len(position_to_token) >= max_positions:
+                truncated = True
+                break
+        if truncated:
+            break
+
+    if strict and (collisions or invalid):
+        raise MalformedAbstractError(
+            f"malformed inverted index: collisions={collisions}, invalid={invalid}"
+        )
+
+    if not position_to_token:
+        return None, AbstractDiagnostics(0, collisions, invalid, truncated)
+
+    ordered = sorted(position_to_token)
+    text = " ".join(position_to_token[p] for p in ordered).strip()
+    diag = AbstractDiagnostics(
+        n_tokens_placed=len(ordered),
+        n_position_collisions=collisions,
+        n_invalid_positions=invalid,
+        truncated=truncated,
+    )
+    return (text or None), diag
 
 
 def reconstruct_abstract(
     inverted_index: Mapping[str, Sequence[int]] | None,
     *,
     max_tokens: int | None = 100_000,
+    strict: bool = False,
 ) -> str | None:
     """Rebuild abstract text from an OpenAlex inverted index.
 
-    Args:
-        inverted_index: mapping ``token -> [positions]`` as returned in
-            ``work["abstract_inverted_index"]``. ``None`` means no abstract.
-        max_tokens: safety cap on the reconstructed length (guards against
-            pathological indices); ``None`` disables the cap.
-
-    Returns:
-        The reconstructed abstract, or ``None`` if the index is absent/empty.
+    Thin wrapper over :func:`reconstruct_with_diagnostics` preserving the original
+    signature. ``max_tokens`` caps the positions consumed (``None`` -> large cap).
     """
-    if not inverted_index:
-        return None
-
-    position_to_token: dict[int, str] = {}
-    for token, positions in inverted_index.items():
-        if positions is None:
-            continue
-        for pos in positions:
-            # Ignore non-int / negative positions defensively.
-            if isinstance(pos, int) and pos >= 0:
-                position_to_token[pos] = token
-
-    if not position_to_token:
-        return None
-
-    ordered_positions = sorted(position_to_token)
-    if max_tokens is not None:
-        ordered_positions = ordered_positions[:max_tokens]
-
-    text = " ".join(position_to_token[pos] for pos in ordered_positions)
-    text = text.strip()
-    return text or None
+    cap = max_tokens if max_tokens is not None else 10_000_000
+    text, _ = reconstruct_with_diagnostics(inverted_index, max_positions=cap, strict=strict)
+    return text

@@ -1,8 +1,8 @@
-"""CLI: build analysable figures + a markdown summary from the Stage-1 data.
+"""CLI: re-render Stage-1 figures + markdown from FROZEN artifacts (no API calls).
 
-Run AFTER ``slpe-characterize-fields``. It replays the cached OpenAlex responses
-(so it is fast and makes no new network calls when the cache is warm), rebuilds the
-per-field records, and writes figures + ``preliminary_results_stage1.md``.
+Reads the CSVs written by ``slpe-characterize-fields`` and regenerates the report.
+It never queries OpenAlex, so a report can never mix fresh numbers with stale
+metadata. Fails clearly if the required artifacts are missing.
 
 Usage:
     python -m slpe.cli.report_characterization [--config config/default.yaml]
@@ -12,49 +12,60 @@ from __future__ import annotations
 
 import argparse
 import json
-import logging
 import sys
-from datetime import datetime, timezone
-from pathlib import Path
 
-from slpe.characterization.eligibility import evaluate_all
-from slpe.characterization.fields import characterize_all_fields
-from slpe.characterization.report import build_report
+from slpe.characterization.report import build_report_from_frames
 from slpe.config import load_config
-from slpe.openalex.client import OpenAlexClient
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Report Stage-1 characterization.")
+    parser = argparse.ArgumentParser(description="Render Stage-1 report from frozen artifacts.")
     parser.add_argument("--config", default="config/default.yaml")
     args = parser.parse_args(argv)
 
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s",
-                        handlers=[logging.StreamHandler(sys.stderr)])
-    log = logging.getLogger("slpe.cli")
+    import pandas as pd
 
     cfg = load_config(args.config)
-    cfg.paths.ensure()
+    results_dir = cfg.paths.results
+    candidates = set(cfg.characterization.candidate_field_ids)
 
-    # Prefer the snapshot timestamp recorded by the characterization run.
-    manifest_path = cfg.paths.results / "field_characterization.manifest.json"
-    snapshot = datetime.now(timezone.utc).isoformat()
+    required = {
+        "characterization": results_dir / "field_characterization.csv",
+        "years": results_dir / "field_characterization_years.csv",
+        "eligibility": results_dir / "field_eligibility.csv",
+    }
+    missing = [str(p) for p in required.values() if not p.exists()]
+    if missing:
+        print("ERROR: missing artifacts; run slpe-characterize-fields first:\n  "
+              + "\n  ".join(missing), file=sys.stderr)
+        return 1
+
+    df = pd.read_csv(required["characterization"])
+    years_df = pd.read_csv(required["years"])
+    elig_df = pd.read_csv(required["eligibility"])
+
+    sens_path = results_dir / "field_sensitivity.csv"
+    sens_df = pd.read_csv(sens_path) if sens_path.exists() else None
+    legacy_path = results_dir / "legacy_eligibility_reproduction.csv"
+    legacy_df = pd.read_csv(legacy_path) if legacy_path.exists() else None
+
+    provenance = {"run_utc": "n/a", "corpus_types": "n/a", "git_commit": "n/a"}
+    manifest_path = results_dir / "field_characterization.manifest.json"
     if manifest_path.exists():
         try:
-            snapshot = json.loads(manifest_path.read_text(encoding="utf-8")).get("snapshot_utc", snapshot)
+            m = json.loads(manifest_path.read_text(encoding="utf-8"))
+            provenance = {
+                "run_utc": m.get("run_utc", "n/a"),
+                "corpus_types": ",".join(m.get("params", {}).get("corpus_types", [])) or "n/a",
+                "git_commit": m.get("git_commit") or "n/a",
+            }
         except json.JSONDecodeError:
             pass
 
-    with OpenAlexClient.from_config(cfg.openalex) as client:
-        records = characterize_all_fields(client, cfg.characterization, cfg.temporal, progress=False)
-        if client.stats.n_requests > 0:
-            log.info("made %d live requests (cache was cold for some fields)", client.stats.n_requests)
-        elig = evaluate_all(records, cfg.characterization.eligibility)
-
-    candidates = set(cfg.characterization.candidate_field_ids)
-    outputs = build_report(records, elig, candidates, cfg.paths.results, snapshot_utc=snapshot)
-
-    print("\nStage-1 report generated:")
+    outputs = build_report_from_frames(
+        df, years_df, elig_df, sens_df, legacy_df, candidates, results_dir, provenance=provenance
+    )
+    print("Report rendered from frozen artifacts:")
     for name, path in outputs.items():
         print(f"  {name}: {path}")
     return 0

@@ -102,9 +102,8 @@ def test_exhausted_retries_raises_not_fabricates(tmp_path):
         return httpx.Response(503, json={})
 
     cfg = make_config(tmp_path, max_retries=3)
-    with client_with_handler(cfg, handler) as c:
-        with pytest.raises(OpenAlexError):
-            c.count("works", "f:1")
+    with client_with_handler(cfg, handler) as c, pytest.raises(OpenAlexError):
+        c.count("works", "f:1")
 
 
 def test_non_retryable_status_raises_immediately(tmp_path):
@@ -115,9 +114,8 @@ def test_non_retryable_status_raises_immediately(tmp_path):
         return httpx.Response(400, text="bad request")
 
     cfg = make_config(tmp_path)
-    with client_with_handler(cfg, handler) as c:
-        with pytest.raises(OpenAlexError):
-            c.count("works", "f:bad")
+    with client_with_handler(cfg, handler) as c, pytest.raises(OpenAlexError):
+        c.count("works", "f:bad")
     assert calls["n"] == 1  # no retries for a 400
 
 
@@ -141,6 +139,8 @@ def test_group_by_parsing(tmp_path):
 
 
 def test_pagination_follows_cursor_and_checkpoints(tmp_path):
+    import json
+
     pages = {
         "*": {"results": [{"id": "A"}, {"id": "B"}], "meta": {"next_cursor": "c2"}},
         "c2": {"results": [{"id": "C"}], "meta": {"next_cursor": None}},
@@ -151,8 +151,149 @@ def test_pagination_follows_cursor_and_checkpoints(tmp_path):
         return httpx.Response(200, json=pages[cursor])
 
     cfg = make_config(tmp_path)
-    checkpoint = tmp_path / "cursor.txt"
+    checkpoint = tmp_path / "cursor.json"
     with client_with_handler(cfg, handler) as c:
         ids = [row["id"] for row in c.paginate("works", filters="f:1", checkpoint_path=checkpoint)]
     assert ids == ["A", "B", "C"]
-    assert checkpoint.read_text().strip() == ""  # finished -> empty cursor
+    state = json.loads(checkpoint.read_text())
+    assert state["done"] is True  # finished -> marked done, not restartable
+
+
+def test_finished_checkpoint_does_not_restart(tmp_path):
+    import json
+
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        return httpx.Response(200, json={"results": [{"id": "A"}], "meta": {"next_cursor": None}})
+
+    cfg = make_config(tmp_path, cache_enabled=False)
+    checkpoint = tmp_path / "cp.json"
+    # Pre-write a DONE checkpoint with the matching query id.
+    import hashlib
+    qid = hashlib.sha256(f"works|f:1|None|{sorted([])}".encode()).hexdigest()[:16]
+    checkpoint.write_text(json.dumps({"query_id": qid, "cursor": None, "done": True}))
+    with client_with_handler(cfg, handler) as c:
+        ids = [r["id"] for r in c.paginate("works", filters="f:1", checkpoint_path=checkpoint)]
+    assert ids == []  # finished collection yields nothing
+    assert calls["n"] == 0
+
+
+def test_checkpoint_query_mismatch_ignored(tmp_path):
+    import json
+
+    pages = {"*": {"results": [{"id": "A"}], "meta": {"next_cursor": None}}}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=pages[request.url.params.get("cursor")])
+
+    cfg = make_config(tmp_path, cache_enabled=False)
+    checkpoint = tmp_path / "cp.json"
+    # Checkpoint from a DIFFERENT query -> must be ignored, collection starts at *.
+    checkpoint.write_text(json.dumps({"query_id": "other", "cursor": "zzz", "done": False}))
+    with client_with_handler(cfg, handler) as c:
+        ids = [r["id"] for r in c.paginate("works", filters="f:1", checkpoint_path=checkpoint)]
+    assert ids == ["A"]
+
+
+def test_cache_envelope_has_provenance(tmp_path):
+    import json
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"meta": {"count": 3}, "results": []},
+                              headers={"Date": "Wed, 21 Nov 2026 00:00:00 GMT"})
+
+    cfg = make_config(tmp_path)
+    with client_with_handler(cfg, handler) as c:
+        c.count("works", "f:1")
+    cache_file = next(cfg.cache_dir.glob("*.json"))
+    env = json.loads(cache_file.read_text())
+    assert env["__slpe_cache__"] == 1
+    assert env["response_date"] == "Wed, 21 Nov 2026 00:00:00 GMT"
+    assert "fetched_utc" in env and "collector_version" in env
+    assert "api_key" not in env["url"] and "mailto" not in env["url"]
+
+
+def test_groupby_truncation_warns(tmp_path, caplog):
+    import logging
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        buckets = [{"key": str(i), "count": 1} for i in range(5)]
+        return httpx.Response(200, json={"meta": {"count": 5}, "group_by": buckets})
+
+    cfg = make_config(tmp_path)
+    with client_with_handler(cfg, handler) as c:
+        with caplog.at_level(logging.WARNING, logger="slpe.openalex"):
+            c.group_by("works", "primary_topic.subfield.id", "f:1", per_page=5)
+    assert any("truncated" in r.message for r in caplog.records)
+
+
+def _three_page_handler():
+    pages = {
+        "*": {"results": [{"id": "A"}, {"id": "B"}], "meta": {"next_cursor": "c2"}},
+        "c2": {"results": [{"id": "C"}, {"id": "D"}], "meta": {"next_cursor": "c3"}},
+        "c3": {"results": [{"id": "E"}], "meta": {"next_cursor": None}},
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=pages[request.url.params.get("cursor")])
+
+    return handler
+
+
+def test_fetch_pages_persists_all_and_counts(tmp_path):
+    persisted = []
+
+    def on_page(rows, page_index):
+        persisted.extend(r["id"] for r in rows)
+
+    cfg = make_config(tmp_path, cache_enabled=False)
+    with client_with_handler(cfg, _three_page_handler()) as c:
+        total = c.fetch_pages("works", on_page, filters="f:1",
+                              checkpoint_path=tmp_path / "cp.json")
+    assert total == 5
+    assert persisted == ["A", "B", "C", "D", "E"]
+
+
+def test_fetch_pages_resumes_after_persistence_failure(tmp_path):
+    # Fail while persisting the 2nd page -> checkpoint must still point at page 2,
+    # so a resume re-fetches and re-persists it (no silent data loss).
+    cfg = make_config(tmp_path, cache_enabled=False)
+    checkpoint = tmp_path / "cp.json"
+
+    seen_first_run = []
+
+    def on_page_fail(rows, page_index):
+        if page_index == 1:
+            raise RuntimeError("disk full during persist")
+        seen_first_run.extend(r["id"] for r in rows)
+
+    with client_with_handler(cfg, _three_page_handler()) as c, pytest.raises(RuntimeError):
+        c.fetch_pages("works", on_page_fail, filters="f:1", checkpoint_path=checkpoint)
+    assert seen_first_run == ["A", "B"]  # only page 0 persisted
+
+    # Resume: page 1 (C, D) must be re-delivered, then page 2 (E).
+    resumed = []
+
+    def on_page_ok(rows, page_index):
+        resumed.extend(r["id"] for r in rows)
+
+    with client_with_handler(cfg, _three_page_handler()) as c:
+        total = c.fetch_pages("works", on_page_ok, filters="f:1", checkpoint_path=checkpoint)
+    assert resumed == ["C", "D", "E"]  # resumed exactly where it failed
+    assert total == 5
+
+
+def test_fetch_pages_respects_max_records(tmp_path):
+    collected = []
+
+    def on_page(rows, page_index):
+        collected.extend(r["id"] for r in rows)
+
+    cfg = make_config(tmp_path, cache_enabled=False)
+    with client_with_handler(cfg, _three_page_handler()) as c:
+        total = c.fetch_pages("works", on_page, filters="f:1", max_records=3,
+                              checkpoint_path=tmp_path / "cp.json")
+    assert total == 3
+    assert collected == ["A", "B", "C"]  # capped mid-second-page

@@ -1,0 +1,27 @@
+field_id,display_name,domain,eligible,failed_criteria
+33,Social Sciences,Social Sciences,False,en-abstract fraction 0.33 < 0.50
+27,Medicine,Health Sciences,True,
+12,Arts and Humanities,Social Sciences,False,en-abstract fraction 0.28 < 0.50; with-references fraction 0.35 < 0.50
+22,Engineering,Physical Sciences,True,
+11,Agricultural and Biological Sciences,Life Sciences,True,
+17,Computer Science,Physical Sciences,True,
+14,"Business, Management and Accounting",Social Sciences,False,en-abstract fraction 0.36 < 0.50; subfield diversity 9 < 10
+23,Environmental Science,Physical Sciences,True,
+13,"Biochemistry, Genetics and Molecular Biology",Life Sciences,False,en-abstract fraction 0.49 < 0.50
+32,Psychology,Social Sciences,False,en-abstract fraction 0.42 < 0.50; subfield diversity 7 < 10
+20,"Economics, Econometrics and Finance",Social Sciences,False,en-abstract fraction 0.41 < 0.50; subfield diversity 3 < 10
+25,Materials Science,Physical Sciences,False,subfield diversity 8 < 10
+31,Physics and Astronomy,Physical Sciences,False,subfield diversity 8 < 10
+16,Chemistry,Physical Sciences,False,subfield diversity 6 < 10
+19,Earth and Planetary Sciences,Physical Sciences,False,en-abstract fraction 0.49 < 0.50; subfield diversity 8 < 10
+26,Mathematics,Physical Sciences,True,
+36,Health Professions,Health Sciences,False,en-abstract fraction 0.45 < 0.50
+28,Neuroscience,Life Sciences,False,subfield diversity 8 < 10
+21,Energy,Physical Sciences,False,en-abstract fraction 0.49 < 0.50; subfield diversity 5 < 10
+24,Immunology and Microbiology,Life Sciences,False,subfield diversity 5 < 10
+18,Decision Sciences,Social Sciences,False,subfield diversity 4 < 10
+35,Dentistry,Health Sciences,False,subfield diversity 4 < 10
+29,Nursing,Health Sciences,False,en-abstract fraction 0.45 < 0.50; subfield diversity 4 < 10
+30,"Pharmacology, Toxicology and Pharmaceutics",Life Sciences,False,subfield diversity 4 < 10
+15,Chemical Engineering,Physical Sciences,False,en-abstract fraction 0.49 < 0.50; subfield diversity 5 < 10
+34,Veterinary,Health Sciences,False,min eligible/cut 19632 < 20000; en-abstract fraction 0.47 < 0.50; subfield diversity 2 < 10

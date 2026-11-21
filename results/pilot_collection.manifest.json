@@ -1,0 +1,80 @@
+{
+  "run_name": "pilot_collection",
+  "run_utc": "2026-11-21T21:28:19.864996+00:00",
+  "temporal_mode": "retrospective_snapshot",
+  "params": {
+    "field_id": 17,
+    "max_records": null,
+    "corpus_filter": "type:article,has_abstract:true,language:en",
+    "year_range": [
+      2013,
+      2022
+    ],
+    "base_dir": "C:\\Users\\avela\\Desktop\\scientific-link-prediction-experiments\\data",
+    "pilot_report": {
+      "collected_raw": 600,
+      "pages": 0,
+      "integrity_issues": [],
+      "after_dedup": 600,
+      "version_links": 0,
+      "uncertain_dupe_flags": 0,
+      "semantic_corpus": 592,
+      "exclusions": {
+        "short_abstract": 8
+      },
+      "citation_edges": 59307,
+      "edges_internal": 1364,
+      "edges_external": 57943,
+      "temporal_partitions": {
+        "2017_to_2018": {
+          "predictor": 283,
+          "emergence": 72,
+          "future_other": 237
+        },
+        "2019_to_2020": {
+          "predictor": 434,
+          "emergence": 64,
+          "future_other": 94
+        },
+        "2021_to_2022": {
+          "predictor": 556,
+          "emergence": 36,
+          "future_other": 0
+        }
+      },
+      "full_collection_cost_estimate": {
+        "works_available_estimate": 1105805,
+        "requests_estimate": 5530,
+        "download_bytes_estimate": 0,
+        "download_gb_estimate": 0.0
+      }
+    }
+  },
+  "stats": {
+    "n_requests": 0,
+    "n_cache_hits": 1,
+    "n_retries": 0,
+    "n_network_errors": 0,
+    "bytes_downloaded": 0,
+    "seconds_waiting": 0.0
+  },
+  "python": "3.13.0",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "versions": {
+    "httpx": "0.28.1",
+    "pandas": "3.1.1",
+    "numpy": "2.5.5",
+    "pyarrow": "26.0.1",
+    "pyyaml": "6.0.4",
+    "matplotlib": "3.11.2",
+    "python-dotenv": "1.2.4",
+    "scientific-link-prediction-experiments": "0.1.0"
+  },
+  "git_commit": "fa8199af1471f667f38314e5d3eefc92de7050b0",
+  "config_sha256": null,
+  "artifact_hashes": {
+    "semantic_corpus.parquet": "1473bb757cf9c547b13a08b585e0e0fd27cb49d4f2ac76ac6d43e14bca0fa574",
+    "citation_edges.parquet": "e338d6b893c9bf764774c0ff323148076563e445946a025654fbc269211c1d72"
+  },
+  "errors": []
+}

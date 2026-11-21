@@ -18,6 +18,36 @@ from typing import Any
 
 import yaml
 
+
+def load_dotenv_if_present(path: str | Path = ".env") -> dict[str, str]:
+    """Load a ``.env`` file into ``os.environ`` (without overriding set vars).
+
+    Uses ``python-dotenv`` when available; otherwise falls back to a minimal
+    parser. Values already present in the environment win, so explicit exports are
+    never clobbered. Returns the keys that were loaded (names only, never values).
+    """
+    p = Path(path)
+    if not p.exists():
+        return {}
+    loaded: dict[str, str] = {}
+    try:
+        from dotenv import dotenv_values
+
+        values = dotenv_values(p)
+    except ImportError:
+        values = {}
+        for line in p.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            values[key.strip()] = val.strip().strip('"').strip("'")
+    for key, val in values.items():
+        if val is not None and key not in os.environ:
+            os.environ[key] = val
+            loaded[key] = "<loaded>"
+    return loaded
+
 # ---------------------------------------------------------------------------
 # Dataclasses
 # ---------------------------------------------------------------------------
@@ -36,6 +66,8 @@ class OpenAlexConfig:
     cache_dir: Path
     cache_enabled: bool
     min_interval_seconds: float
+    cache_max_age_days: float | None = None  # None -> cache never expires
+    refresh_cache: bool = False              # True -> bypass reads, refetch + overwrite
 
 
 @dataclass(frozen=True)
@@ -52,11 +84,23 @@ class Paths:
 
 
 @dataclass(frozen=True)
+class CorpusConfig:
+    types: tuple[str, ...]
+    sensitivity_types: tuple[str, ...]
+    require_english_abstract: bool
+
+    @staticmethod
+    def types_filter(types: tuple[str, ...]) -> str:
+        """OpenAlex ``type:`` filter value for a set of types (OR-joined)."""
+        return "|".join(types)
+
+
+@dataclass(frozen=True)
 class Eligibility:
-    min_eligible_works_per_cut: int
+    # Subfield COUNT is intentionally absent as a gate (see default.yaml).
+    min_semantic_eligible_per_cut: int
     min_english_abstract_fraction: float
     min_with_references_fraction: float
-    min_subfield_diversity: int
 
 
 @dataclass(frozen=True)
@@ -81,6 +125,19 @@ class TemporalConfig:
     emergence_horizon_years: int  # Delta_e
     disruption_horizon_years: int  # Delta_d
     cuts: tuple[TemporalCut, ...]
+    full_history_start: int = 2000  # earliest observed year for novelty checks
+
+    def novelty_range(self, cut: TemporalCut) -> tuple[int, int]:
+        """[full_history_start, T] — all observed history for the novelty check."""
+        return (self.full_history_start, cut.cut)
+
+    def feature_range(self, cut: TemporalCut) -> tuple[int, int]:
+        """[history_start, T] — the recent L-window used to build features."""
+        return (cut.history_start, cut.cut)
+
+    def emergence_range(self, cut: TemporalCut) -> tuple[int, int]:
+        """(T, T+Delta_e] — the future window where emergence is observed."""
+        return (cut.cut + 1, cut.cut + self.emergence_horizon_years)
 
 
 @dataclass(frozen=True)
@@ -88,6 +145,7 @@ class Config:
     seed: int
     openalex: OpenAlexConfig
     paths: Paths
+    corpus: CorpusConfig
     characterization: CharacterizationConfig
     temporal: TemporalConfig
     raw: dict[str, Any] = field(default_factory=dict, repr=False)
@@ -122,8 +180,14 @@ def load_config(
     Returns:
         A frozen :class:`Config`.
     """
-    env = dict(os.environ if env is None else env)
     root = Path(project_root) if project_root is not None else Path.cwd()
+    # Load .env into the process environment before reading secrets, unless the
+    # caller injected an explicit env mapping (tests) — then do not touch os.environ.
+    if env is None:
+        load_dotenv_if_present(root / ".env")
+        env = dict(os.environ)
+    else:
+        env = dict(env)
     cfg_path = _resolve_path(root, str(path)) if not Path(path).is_absolute() else Path(path)
 
     with open(cfg_path, encoding="utf-8") as fh:
@@ -145,6 +209,10 @@ def load_config(
         cache_dir=_resolve_path(root, str(oa.get("cache_dir", "data/openalex_cache"))),
         cache_enabled=bool(oa.get("cache_enabled", True)),
         min_interval_seconds=float(oa.get("min_interval_seconds", 0.11)),
+        cache_max_age_days=(
+            float(oa["cache_max_age_days"]) if oa.get("cache_max_age_days") is not None else None
+        ),
+        refresh_cache=bool(oa.get("refresh_cache", False)),
     )
 
     p = data.get("paths", {})
@@ -156,6 +224,13 @@ def load_config(
         logs=_resolve_path(root, str(p.get("logs", "logs"))),
     )
 
+    co = data.get("corpus", {})
+    corpus = CorpusConfig(
+        types=tuple(str(x) for x in co.get("types", ["article"])),
+        sensitivity_types=tuple(str(x) for x in co.get("sensitivity_types", ["article", "conference-paper"])),
+        require_english_abstract=bool(co.get("require_english_abstract", True)),
+    )
+
     ch = data.get("characterization", {})
     el = ch.get("eligibility", {})
     characterization = CharacterizationConfig(
@@ -163,10 +238,9 @@ def load_config(
         year_max=int(ch.get("year_max", 2022)),
         candidate_field_ids=tuple(int(x) for x in ch.get("candidate_field_ids", [])),
         eligibility=Eligibility(
-            min_eligible_works_per_cut=int(el.get("min_eligible_works_per_cut", 20000)),
+            min_semantic_eligible_per_cut=int(el.get("min_semantic_eligible_per_cut", 20000)),
             min_english_abstract_fraction=float(el.get("min_english_abstract_fraction", 0.5)),
             min_with_references_fraction=float(el.get("min_with_references_fraction", 0.5)),
-            min_subfield_diversity=int(el.get("min_subfield_diversity", 10)),
         ),
     )
 
@@ -185,16 +259,44 @@ def load_config(
         emergence_horizon_years=int(t.get("emergence_horizon_years", 1)),
         disruption_horizon_years=int(t.get("disruption_horizon_years", 3)),
         cuts=cuts,
+        full_history_start=int(t.get("full_history_start", 2000)),
     )
 
-    return Config(
+    cfg = Config(
         seed=int(data.get("seed", 0)),
         openalex=openalex,
         paths=paths,
+        corpus=corpus,
         characterization=characterization,
         temporal=temporal,
         raw=data,
     )
+    problems = validate_config(cfg)
+    if problems:
+        raise ValueError("invalid configuration: " + "; ".join(problems))
+    return cfg
+
+
+def validate_config(cfg: Config) -> list[str]:
+    """Validate value ranges and internal consistency. Returns problem strings."""
+    p: list[str] = []
+    oa = cfg.openalex
+    if not (1 <= oa.per_page <= 200):
+        p.append(f"openalex.per_page {oa.per_page} outside [1, 200]")
+    if oa.max_retries < 1:
+        p.append("openalex.max_retries must be >= 1")
+    if oa.min_interval_seconds < 0:
+        p.append("openalex.min_interval_seconds must be >= 0")
+    ch = cfg.characterization
+    if ch.year_min > ch.year_max:
+        p.append(f"year_min {ch.year_min} > year_max {ch.year_max}")
+    for frac_name in ("min_english_abstract_fraction", "min_with_references_fraction"):
+        val = getattr(ch.eligibility, frac_name)
+        if not (0.0 <= val <= 1.0):
+            p.append(f"eligibility.{frac_name} {val} outside [0, 1]")
+    if not cfg.corpus.types:
+        p.append("corpus.types must list at least one OpenAlex work type")
+    return p
 
 
 def validate_temporal_protocol(temporal: TemporalConfig) -> list[str]:
@@ -222,8 +324,21 @@ def validate_temporal_protocol(temporal: TemporalConfig) -> list[str]:
                 f"T_val({val})+Δe({de})+Δd({dd})={val + de + dd} > T_te({te})"
             )
     for c in cuts:
-        if c.cut - c.history_start + 1 <= 0:
+        window = c.cut - c.history_start + 1
+        if window <= 0:
             violations.append(f"cut {c.name}: non-positive history window")
+        elif window != temporal.history_window_years:
+            violations.append(
+                f"cut {c.name}: history window {window} != L={temporal.history_window_years} "
+                f"(history_start={c.history_start}, cut={c.cut})"
+            )
         if c.emergence_year <= c.cut:
             violations.append(f"cut {c.name}: emergence_year must be > cut")
+        elif c.emergence_year != c.cut + 1:
+            # Δe=1 means the emergence window is the single year T+1.
+            expected = c.cut + 1
+            if temporal.emergence_horizon_years == 1 and c.emergence_year != expected:
+                violations.append(
+                    f"cut {c.name}: emergence_year {c.emergence_year} != cut+Δe {expected}"
+                )
     return violations

@@ -1,0 +1,43 @@
+{
+  "run_name": "textual_quality_sampling",
+  "run_utc": "2026-11-21T20:54:00.619033+00:00",
+  "temporal_mode": "retrospective_snapshot",
+  "params": {
+    "fields": [
+      17,
+      31,
+      27
+    ],
+    "n_per_field": 300,
+    "margin": 0.05,
+    "corpus_filter": "type:article,has_abstract:true,language:en,from_publication_date:2013-01-01,to_publication_date:2022-12-31",
+    "seed": 20260101
+  },
+  "stats": {
+    "n_requests": 6,
+    "n_cache_hits": 0,
+    "n_retries": 0,
+    "n_network_errors": 0,
+    "bytes_downloaded": 3247759,
+    "seconds_waiting": 0.0
+  },
+  "python": "3.13.0",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "versions": {
+    "httpx": "0.28.1",
+    "pandas": "2.3.1",
+    "numpy": "2.3.2",
+    "pyarrow": "26.0.1",
+    "pyyaml": "6.0.3",
+    "matplotlib": "3.10.3",
+    "python-dotenv": "1.0.1",
+    "scientific-link-prediction-experiments": "0.1.0"
+  },
+  "git_commit": "fa8199af1471f667f38314e5d3eefc92de7050b0",
+  "config_sha256": null,
+  "artifact_hashes": {
+    "textual_quality_sampling.csv": "9bfc58312356cc074a6ddb34cdcf02d5949d9e0c07e88674813858820cfe6b94",
+    "textual_quality_by_year.csv": "ea9f9f53de40297e066eefd2f93a12458f7f3517be1710d0d34d40c490af2a46"
+  },
+  "errors": []
+}

@@ -1,0 +1,4 @@
+field_id,display_name,n_sampled,pct_multidisciplinary,primary_share_self,weighted_share_self,top_secondary_fields
+17,Computer Science,500,0.482,1.0,0.9494415286774647,Social Sciences(33):0.02; Engineering(22):0.01; Mathematics(26):0.00
+31,Physics and Astronomy,500,0.522,1.0,0.9533598293149638,Engineering(22):0.02; Materials Science(25):0.01; Chemistry(16):0.01
+27,Medicine,500,0.398,1.0,0.964877352380603,"Biochemistry, Genetics and Molecular Biology(13):0.01; Neuroscience(28):0.00; Health Professions(36):0.00"
