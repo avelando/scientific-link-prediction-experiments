@@ -1,0 +1,11 @@
+# Core runtime dependencies (pinned loosely; see pyproject.toml for extras).
+# Install the package editable with all extras for development:
+#   pip install -e ".[viz,nlp,graph,dev]"
+httpx>=0.27
+pyyaml>=6.0
+pandas>=2.1
+numpy>=1.26
+pyarrow>=15.0
+tenacity>=8.2
+platformdirs>=4.0
+tqdm>=4.66

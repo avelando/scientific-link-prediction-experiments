@@ -1,0 +1,78 @@
+# Central configuration for the preliminary experiments.
+# Every stage reads from a config like this so that areas, temporal windows,
+# hyperparameters, seeds and paths live in one place (project requirement 10).
+#
+# NOTE ON STATUS:
+#   - "project" keys encode decisions already fixed in the PhD research project.
+#   - "experiment" keys encode the preliminary-experiment choices we are proposing now.
+# This separation keeps established methodology distinct from our extensions.
+
+seed: 20260101            # global RNG seed; stochastic components also take per-run seeds
+
+openalex:
+  base_url: "https://api.openalex.org"
+  # Contact email for the polite pool. Overridden by env OPENALEX_MAILTO if set.
+  # Do NOT hard-code a personal address here if the config is shared publicly.
+  mailto: null
+  # API key is read ONLY from env OPENALEX_API_KEY (never stored here).
+  per_page: 200            # OpenAlex max page size
+  max_retries: 5
+  backoff_initial_seconds: 1.0
+  backoff_max_seconds: 60.0
+  timeout_seconds: 30.0
+  # Persistent on-disk cache for GET responses (keyed by normalized URL).
+  cache_dir: "data/openalex_cache"
+  cache_enabled: true
+  # Minimum seconds between requests (client-side throttle; polite pool ~10 req/s).
+  min_interval_seconds: 0.11
+
+paths:
+  data_raw: "data/raw"
+  data_interim: "data/interim"
+  data_processed: "data/processed"
+  results: "results"
+  logs: "logs"
+
+# ---------------------------------------------------------------------------
+# Stage 1 — field characterization and domain selection (what this phase runs).
+# ---------------------------------------------------------------------------
+characterization:
+  # Years over which to profile each field. The three temporal cuts below live
+  # inside this range, so the same characterization covers all of them.
+  year_min: 2013
+  year_max: 2022
+  # Candidate fields explicitly named in the project brief as starting points.
+  # Characterization still runs over ALL 26 fields; these are only highlighted.
+  candidate_field_ids: [17, 31, 27]   # Computer Science, Physics and Astronomy, Medicine
+  # Eligibility thresholds for a field to qualify for the main evaluation.
+  # Defined on DATA-QUALITY grounds only, never on model performance
+  # (project requirement: selection must not depend on test-set accuracy).
+  eligibility:
+    min_eligible_works_per_cut: 20000   # works with en title+abstract, refs, usable date
+    min_english_abstract_fraction: 0.5  # share of works with a reconstructable en abstract
+    min_with_references_fraction: 0.5   # share of works exposing outgoing references
+    min_subfield_diversity: 10          # distinct subfields present (disciplinary breadth)
+
+# ---------------------------------------------------------------------------
+# Temporal protocol (project 4.1 / 4.5). Established in the project; values here
+# are the preliminary-experiment defaults.
+# ---------------------------------------------------------------------------
+temporal:
+  history_window_years: 5     # L (project default; 3 and 7 explored later as sensitivity)
+  emergence_horizon_years: 1  # Delta_e
+  disruption_horizon_years: 3 # Delta_d (exploratory availability study in this phase)
+  # Retrospective cuts: build features from [cut-L+1, cut], evaluate emergence in (cut, cut+Delta_e].
+  cuts:
+    - { name: "2017_to_2018", history_start: 2013, cut: 2017, emergence_year: 2018 }
+    - { name: "2019_to_2020", history_start: 2015, cut: 2019, emergence_year: 2020 }
+    - { name: "2021_to_2022", history_start: 2017, cut: 2021, emergence_year: 2022 }
+
+# ---------------------------------------------------------------------------
+# Later stages (placeholders kept so config stays the single source of truth).
+# Not consumed in this phase; documented to keep the architecture extensible.
+# ---------------------------------------------------------------------------
+concepts:
+  extractor: "yake"           # {yake, keybert}; compared in stage 3
+  max_concepts_per_doc: 15
+disruption:
+  label_aggregation: "median" # project primary label; mean / first-occurrence as robustness

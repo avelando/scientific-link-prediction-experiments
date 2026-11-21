@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.env
+
+# Caches and data artifacts (reproducible outputs are regenerated, not versioned)
+.cache/
+data/raw/
+data/interim/
+data/processed/
+data/openalex_cache/
+*.parquet
+*.feather
+
+# Keep small curated results and manifests under results/ by exception (see results/.gitignore)
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
