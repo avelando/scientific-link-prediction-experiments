@@ -382,8 +382,19 @@ class OpenAlexClient:
         confirmed durability.
 
         The checkpoint is bound to the query identity (path+filters+select+extra); a
-        saved cursor from a different query is ignored. A finished collection records
-        a ``done`` marker and is not restarted.
+        saved cursor from a different query is ignored. The checkpoint records a
+        ``status`` (NOT a plain done flag), distinguishing:
+
+            * ``complete``    — the query universe was exhausted (no next cursor);
+                                re-running yields nothing.
+            * ``partial``     — stopped at ``max_records`` though more data exists;
+                                re-running (optionally with a larger cap) CONTINUES
+                                from the saved cursor, so a capped pilot can be
+                                expanded later. This is the bug this state fixes.
+            * ``interrupted`` — a saved cursor from a run that did not finish (process
+                                died); resuming continues from it.
+            * ``failed``      — ``on_page`` raised; the cursor was not advanced, so a
+                                resume re-fetches and re-persists the in-flight page.
 
         Args:
             on_page: callback that durably persists a page's rows; must raise on
@@ -391,7 +402,7 @@ class OpenAlexClient:
             max_records: optional cap on total records fetched (for test/pilot modes).
 
         Returns:
-            Total number of records delivered to ``on_page``.
+            Total number of records delivered to ``on_page`` across all runs.
         """
         per_page = per_page or self.config.per_page
         query_id = hashlib.sha256(
@@ -408,19 +419,21 @@ class OpenAlexClient:
             except json.JSONDecodeError:
                 state = {}
             if state.get("query_id") == query_id:
-                if state.get("done"):
-                    return int(state.get("total", 0))
+                status = state.get("status")
+                if status == "complete":
+                    return int(state.get("total", 0))  # universe exhausted
+                # partial / interrupted / failed -> continue from saved cursor.
                 cursor = state.get("cursor") or "*"
                 page_index = int(state.get("page_index", 0))
                 total = int(state.get("total", 0))
             else:
                 logger.warning("checkpoint query mismatch; starting fresh")
 
-        def _save(cur: str | None, done: bool) -> None:
+        def _save(cur: str | None, status: str) -> None:
             if cp is not None:
                 tmp = cp.with_suffix(".tmp")
                 tmp.write_text(json.dumps({
-                    "query_id": query_id, "cursor": cur, "done": done,
+                    "query_id": query_id, "cursor": cur, "status": status,
                     "page_index": page_index, "total": total,
                 }), encoding="utf-8")
                 tmp.replace(cp)
@@ -435,21 +448,33 @@ class OpenAlexClient:
             payload = self.get(path, params)
             results = payload.get("results", [])
 
-            if max_records is not None and total + len(results) > max_records:
-                results = results[: max_records - total]
+            # NOTE: full pages are persisted whole — we never slice a page to hit
+            # max_records, because slicing + advancing the cursor would silently
+            # drop the page's remainder on resume. The cap is therefore PAGE-ALIGNED
+            # (it overshoots by < per_page), which guarantees no record is skipped.
 
-            # Persist FIRST; only then advance the checkpoint cursor.
-            on_page(results, page_index)
+            # Persist FIRST; only then advance the checkpoint cursor. If on_page
+            # raises, record 'failed' (cursor unchanged) and re-raise.
+            try:
+                on_page(results, page_index)
+            except Exception:
+                _save(cursor, "failed")
+                raise
             total += len(results)
             page_index += 1
 
             next_cursor = payload.get("meta", {}).get("next_cursor")
+            exhausted = not results or not next_cursor
             reached_cap = max_records is not None and total >= max_records
-            if not results or not next_cursor or reached_cap:
-                _save(None, done=True)
+            if exhausted:
+                _save(None, "complete")
+                break
+            if reached_cap:
+                # More data exists; keep the cursor so a later run can continue.
+                _save(next_cursor, "partial")
                 break
             cursor = next_cursor
-            _save(cursor, done=False)
+            _save(cursor, "interrupted")  # in-flight; becomes 'complete' when done
 
         return total
 

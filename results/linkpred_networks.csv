@@ -1,0 +1,4 @@
+cut,n_nodes,n_edges,density,n_components,giant_component_frac,mean_degree,max_degree,n_hist_docs,n_future_docs
+2017_to_2018,279,834,0.021505,9,0.9606,5.978,36,1250,250
+2019_to_2020,285,880,0.021745,12,0.9509,6.175,43,1750,250
+2021_to_2022,293,956,0.022348,8,0.9693,6.526,33,2250,250

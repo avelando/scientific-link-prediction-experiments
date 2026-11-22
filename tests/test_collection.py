@@ -3,7 +3,12 @@
 import pandas as pd
 
 from slpe.collection.bibliometric import citation_edges, edge_stats
-from slpe.collection.dedup import deduplicate, normalize_title
+from slpe.collection.dedup import (
+    apply_canonical_mapping,
+    canonical_mapping,
+    deduplicate,
+    normalize_title,
+)
 from slpe.collection.io_parquet import (
     check_publications_integrity,
     dataset_count,
@@ -101,6 +106,22 @@ def test_normalize_title():
     assert normalize_title(None) is None
 
 
+def test_canonical_mapping_applied_to_references():
+    df = pd.DataFrame([
+        _pub("W1", doi="10.1/x", date="2019-01-01"),
+        _pub("W2", doi="10.1/x", date="2018-01-01"),  # canonical
+    ])
+    _, links = deduplicate(df)
+    mapping = canonical_mapping(links)
+    assert mapping == {"W1": "W2"}  # confirmed link only
+    refs = pd.DataFrame([{"citing_id": "W1", "cited_id": "W9"},
+                         {"citing_id": "W5", "cited_id": "W1"}])
+    remapped = apply_canonical_mapping(refs, mapping, ["citing_id", "cited_id"])
+    assert remapped.iloc[0]["citing_id"] == "W2"  # W1 -> canonical W2
+    assert remapped.iloc[1]["cited_id"] == "W2"
+    assert remapped.iloc[1]["citing_id"] == "W5"  # unmapped left as-is
+
+
 # --- semantic corpus ------------------------------------------------------
 
 def test_semantic_corpus_exclusions():
@@ -131,8 +152,8 @@ def test_citation_edges_and_stats():
     ])
     edges = citation_edges(refs)
     assert len(edges) == 2  # dedup + self-citation removed
-    stats = edge_stats(edges, focal_ids={"W1", "W2"})
-    assert stats.n_internal == 1 and stats.n_external == 1
+    stats = edge_stats(edges, corpus_ids={"W1", "W2"})
+    assert stats.n_cited_in_corpus == 1 and stats.n_cited_outside_corpus == 1
 
 
 # --- temporal -------------------------------------------------------------

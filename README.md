@@ -148,6 +148,52 @@ Temporal ranges are distinct: full observed history (novelty) ⊇ recent L-windo
 (features), with the future emergence window kept separate as labels. A full
 collection requires explicit flags (`--full --i-understand-full-collection`).
 
+Novelty is defined over the **observed** sampled corpus (`temporal.full_history_start`,
+set to the earliest collected year, 2013) — results are "new co-occurrences in the
+sampled historical corpus", not globally novel in the literature.
+
+### PDF viability (Phase B)
+
+Measures the real open-access PDF acquisition funnel on a small sample (free OA
+sources only; the paid OpenAlex content API stays off unless enabled in config):
+
+```powershell
+slpe-collect-pdfs-pilot --config config/default.yaml --n 15
+```
+
+For each candidate field it reports distinct, never-conflated quantities — eligible
+records, OA-eligible, with-PDF-URL, downloaded, valid PDF, text-extracted — plus
+per-area OA availability and a storage/cost projection to a target corpus. PDFs come
+from `best_oa_location.pdf_url` → `locations[].pdf_url` → `oa_url`; downloads honour
+HTTP status/rate limits and never bypass paywalls or auth. Full text is extracted
+with PyMuPDF (optionally GROBID if `pdf.grobid_url` points at a running server) and
+the reference list is split out so cited-work titles don't leak into the body.
+Outputs: `results/pdf_viability_funnel.csv`, `results/pdf_viability_perwork.csv`,
+`results/pdf_download_attempts.csv` (fixed-schema attempts log),
+`data/processed/pdf_fulltext/` (both `data/pdfs/` and the full text are git-ignored).
+A validated local PDF is **reused** on re-runs (a failed re-download never discards it).
+
+## Stage 3 — first link-prediction comparison (title + abstract)
+
+Runs the real chain on the project's **primary representation** (title+abstract):
+concept extraction (YAKE) → semantic co-occurrence network per cut → historical
+novelty ledger → emergent candidate pairs → topological methods + baselines →
+AUPRC / Precision@K / Recall@K across the three temporal cuts.
+
+```powershell
+slpe-run-linkpred --config config/default.yaml --field 17 --per-year 250 --seeds 3
+```
+
+Concepts are cached to `data/interim/concepts_field*.parquet` (re-runs are fast).
+Outputs under `results/`: `linkpred_auprc_summary.csv` (method × cut AUPRC, mean ± std),
+`linkpred_results.csv`, `linkpred_networks.csv`, `linkpred_by_stratum.csv`, and a
+manifest. See [`docs/preliminary_results_linkpred.md`](docs/preliminary_results_linkpred.md)
+for the first results **and their limitations** — notably that negative sampling is
+not yet distance/community-stratified (§4.2), so H2 is not yet validly tested.
+
+> These are viability results on a small sampled corpus, not the final study, and
+> must not be read as confirming the central (RAG-justification) hypothesis.
+
 ## Repository layout
 
 ```

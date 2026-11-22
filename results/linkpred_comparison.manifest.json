@@ -1,0 +1,189 @@
+{
+  "run_name": "linkpred_comparison",
+  "run_utc": "2026-11-22T05:20:21.695574+00:00",
+  "temporal_mode": "retrospective_snapshot",
+  "params": {
+    "field_id": 17,
+    "per_year": 250,
+    "negatives": 2000,
+    "seeds": 3,
+    "L": 5,
+    "emergence_horizon": 1,
+    "min_concept_docs": 3,
+    "auprc_summary": [
+      {
+        "cut": "2017_to_2018",
+        "method": "popularity",
+        "mean": 0.29581,
+        "std": 0.0018728855,
+        "count": 3
+      },
+      {
+        "cut": "2017_to_2018",
+        "method": "preferential_attachment",
+        "mean": 0.2925133333,
+        "std": 0.0013636104,
+        "count": 3
+      },
+      {
+        "cut": "2017_to_2018",
+        "method": "adamic_adar",
+        "mean": 0.21689,
+        "std": 0.0,
+        "count": 3
+      },
+      {
+        "cut": "2017_to_2018",
+        "method": "common_neighbors",
+        "mean": 0.21689,
+        "std": 0.0,
+        "count": 3
+      },
+      {
+        "cut": "2017_to_2018",
+        "method": "jaccard",
+        "mean": 0.21689,
+        "std": 0.0,
+        "count": 3
+      },
+      {
+        "cut": "2017_to_2018",
+        "method": "resource_allocation",
+        "mean": 0.21689,
+        "std": 0.0,
+        "count": 3
+      },
+      {
+        "cut": "2017_to_2018",
+        "method": "random",
+        "mean": 0.1722633333,
+        "std": 0.0096940411,
+        "count": 3
+      },
+      {
+        "cut": "2019_to_2020",
+        "method": "popularity",
+        "mean": 0.3068266667,
+        "std": 0.000376342,
+        "count": 3
+      },
+      {
+        "cut": "2019_to_2020",
+        "method": "preferential_attachment",
+        "mean": 0.3047266667,
+        "std": 0.0006401042,
+        "count": 3
+      },
+      {
+        "cut": "2019_to_2020",
+        "method": "adamic_adar",
+        "mean": 0.2241533333,
+        "std": 0.0003695042,
+        "count": 3
+      },
+      {
+        "cut": "2019_to_2020",
+        "method": "resource_allocation",
+        "mean": 0.2241533333,
+        "std": 0.0003695042,
+        "count": 3
+      },
+      {
+        "cut": "2019_to_2020",
+        "method": "common_neighbors",
+        "mean": 0.2237933333,
+        "std": 0.0006812733,
+        "count": 3
+      },
+      {
+        "cut": "2019_to_2020",
+        "method": "jaccard",
+        "mean": 0.22356,
+        "std": 0.0008889882,
+        "count": 3
+      },
+      {
+        "cut": "2019_to_2020",
+        "method": "random",
+        "mean": 0.1915233333,
+        "std": 0.0097341273,
+        "count": 3
+      },
+      {
+        "cut": "2021_to_2022",
+        "method": "popularity",
+        "mean": 0.36654,
+        "std": 0.0,
+        "count": 3
+      },
+      {
+        "cut": "2021_to_2022",
+        "method": "preferential_attachment",
+        "mean": 0.36654,
+        "std": 0.0,
+        "count": 3
+      },
+      {
+        "cut": "2021_to_2022",
+        "method": "adamic_adar",
+        "mean": 0.28661,
+        "std": 0.0,
+        "count": 3
+      },
+      {
+        "cut": "2021_to_2022",
+        "method": "common_neighbors",
+        "mean": 0.28661,
+        "std": 0.0,
+        "count": 3
+      },
+      {
+        "cut": "2021_to_2022",
+        "method": "jaccard",
+        "mean": 0.28661,
+        "std": 0.0,
+        "count": 3
+      },
+      {
+        "cut": "2021_to_2022",
+        "method": "resource_allocation",
+        "mean": 0.28661,
+        "std": 0.0,
+        "count": 3
+      },
+      {
+        "cut": "2021_to_2022",
+        "method": "random",
+        "mean": 0.2413066667,
+        "std": 0.0104377696,
+        "count": 3
+      }
+    ]
+  },
+  "stats": {
+    "n_requests": 20,
+    "n_cache_hits": 0,
+    "n_retries": 0,
+    "n_network_errors": 0,
+    "bytes_downloaded": 5680799,
+    "seconds_waiting": 0.0
+  },
+  "python": "3.13.0",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "versions": {
+    "httpx": "0.28.1",
+    "pandas": "3.1.1",
+    "numpy": "2.5.5",
+    "pyarrow": "26.0.1",
+    "pyyaml": "6.0.4",
+    "matplotlib": "3.11.2",
+    "python-dotenv": "1.2.4",
+    "scientific-link-prediction-experiments": "0.1.0"
+  },
+  "git_commit": "e3bfa684079a49c508e224239390d29367deeb68",
+  "config_sha256": null,
+  "artifact_hashes": {
+    "linkpred_results.csv": "ce3c241eace1e3cf65b968a84adbf7b096e6fc557745bee85a3cf80324a9f185"
+  },
+  "errors": []
+}

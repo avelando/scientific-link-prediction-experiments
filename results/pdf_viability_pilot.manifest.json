@@ -1,0 +1,66 @@
+{
+  "run_name": "pdf_viability_pilot",
+  "run_utc": "2026-11-21T22:04:11.188775+00:00",
+  "temporal_mode": "retrospective_snapshot",
+  "params": {
+    "fields": [
+      17
+    ],
+    "n_per_field": 30,
+    "corpus_filter": "type:article,has_abstract:true,language:en,from_publication_date:2013-01-01,to_publication_date:2022-12-31",
+    "seed": 20260101,
+    "allow_content_api": false,
+    "grobid": false,
+    "funnel": [
+      {
+        "field_id": 17,
+        "eligible_records": 1105805,
+        "oa_eligible": 687760,
+        "oa_availability": 0.622,
+        "sampled": 30,
+        "with_pdf_url": 30,
+        "downloaded": 21,
+        "valid_pdf": 0,
+        "text_extracted": 0,
+        "pdf_url_rate": 1.0,
+        "valid_rate": 0.0,
+        "final_rate": 0.0
+      }
+    ],
+    "projection": {
+      "measured_bytes_per_valid_pdf": 0,
+      "mean_final_processable_rate": 0.0,
+      "target_processable_docs": 33000,
+      "estimated_pdf_storage_gb": null,
+      "estimated_works_to_sample": null,
+      "note": "rates are from a SMALL sample; treat as indicative, not population estimates"
+    }
+  },
+  "stats": {
+    "n_requests": 1,
+    "n_cache_hits": 2,
+    "n_retries": 0,
+    "n_network_errors": 0,
+    "bytes_downloaded": 123047,
+    "seconds_waiting": 0.0,
+    "pdf_total_bytes": 21068494
+  },
+  "python": "3.13.0",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "versions": {
+    "httpx": "0.28.1",
+    "pandas": "3.1.1",
+    "numpy": "2.5.5",
+    "pyarrow": "26.0.1",
+    "pyyaml": "6.0.4",
+    "matplotlib": "3.11.2",
+    "python-dotenv": "1.2.4",
+    "scientific-link-prediction-experiments": "0.1.0"
+  },
+  "git_commit": "e3bfa684079a49c508e224239390d29367deeb68",
+  "config_sha256": null,
+  "artifact_hashes": {
+    "pdf_viability_funnel.csv": "37694bc6e191078610b7b95a67ce12c2a54f8faeb2cf56abae9438a7897f56a0"
+  },
+  "errors": []
+}

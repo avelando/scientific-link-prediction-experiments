@@ -29,3 +29,36 @@ Verified against the current code before changing anything.
 
 Out of scope (explicitly deferred): YAKE/KeyBERT, node2vec, networks, full disruption
 indices, link prediction, RAG/LLMs.
+
+## Phase A corrections — applied (this round)
+
+| Audit item | Status | Note |
+|---|---|---|
+| 4.1 capped collection marked "done" | **fixed** | checkpoint `status` ∈ {complete, partial, interrupted, failed}; capped→partial continues on resume |
+| 4.2 dataset identity | **fixed** | `dataset_manifest.json` with query id; refuses mixing a different query into a dataset dir |
+| 4.3 scalability (to_table/to_pandas) | **partially** | batched part-file writes + `iter_batches`/`dataset_count` streaming; dedup stays in-memory (bounded at ~100k rows — documented) |
+| 4.4 external references naming | **fixed** | renamed to cited-in/outside **observed corpus**; not "outside the field" |
+| 4.5 dedup id-mapping | **fixed** | `canonical_mapping` + `apply_canonical_mapping` applied to references (and topics) |
+| 4.6 provenance | **present** | response `Date` (cache) vs `collected_utc` (row) vs `run_utc` (manifest) distinguished |
+| 4.7 per_page / full_history_start | **fixed** | per_page=200 is the OpenAlex cursor max (kept); `full_history_start` set to 2013 + validated |
+
+## Phase B pilot — measured (real run, 12 works/field)
+
+Free OA PDFs only; paid content API off. Funnel (indicative, small sample):
+
+| Field | OA availability | with PDF URL | valid PDF | text extracted |
+|---|---:|---:|---:|---:|
+| Computer Science (17) | 0.62 | 12/12 | 5/12 | 5/12 |
+| Physics & Astronomy (31) | 0.72 | 12/12 | 8/12 | 8/12 |
+| Medicine (27) | 0.69 | 12/12 | 5/12 | 5/12 |
+
+Mean processable rate ≈ 0.50; ≈ 1.0 MB per valid PDF. Projection to 99k processable
+docs: ≈ 101 GB storage and ≈ 198k works to sample. Rates are from a SMALL sample —
+indicative, not population estimates. The gap from "PDF URL" (100%) to "valid+text"
+(~50%) is real attrition (403/404, HTML/landing pages, scanned/no-text, corrupt).
+
+## Still pending (next increments — Phases C–F, not done here)
+
+Concept extraction (YAKE vs KeyBERT), semantic/citation network construction,
+candidate pairs + emergence labels, link-prediction methods + evaluation (H1/H2/H3),
+and the disruption availability diagnosis. H1/H2/H3 are **not** yet tested.

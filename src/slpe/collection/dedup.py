@@ -95,3 +95,29 @@ def deduplicate(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     linkage_df = pd.DataFrame(
         links, columns=["work_id", "canonical_id", "rule", "confidence", "reason"])
     return canonical_df, linkage_df
+
+
+def canonical_mapping(linkage_df: pd.DataFrame) -> dict[str, str]:
+    """Build an original-id -> canonical-id map from CONFIRMED links only.
+
+    Uncertain matches are NOT remapped (they are flags, not merges). The map lets
+    related tables (references, topics) consistently use canonical ids.
+    """
+    if linkage_df.empty:
+        return {}
+    confirmed = linkage_df[linkage_df["confidence"] == "confirmed"]
+    return dict(zip(confirmed["work_id"], confirmed["canonical_id"]))
+
+
+def apply_canonical_mapping(
+    df: pd.DataFrame, mapping: dict[str, str], columns: list[str]
+) -> pd.DataFrame:
+    """Remap id columns to canonical ids (e.g. references' citing_id/cited_id,
+    topics' work_id). Ids absent from the mapping are left unchanged."""
+    if not mapping or df.empty:
+        return df
+    out = df.copy()
+    for col in columns:
+        if col in out.columns:
+            out[col] = out[col].map(lambda x: mapping.get(x, x))
+    return out

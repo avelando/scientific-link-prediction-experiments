@@ -1,0 +1,2 @@
+field_id,eligible_records,oa_eligible,oa_availability,sampled,with_pdf_url,downloaded,valid_pdf,text_extracted,pdf_url_rate,valid_rate,final_rate
+17,1105805,687760,0.622,30,30,21,0,0,1.0,0.0,0.0

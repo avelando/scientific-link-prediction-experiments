@@ -285,7 +285,10 @@ def test_fetch_pages_resumes_after_persistence_failure(tmp_path):
     assert total == 5
 
 
-def test_fetch_pages_respects_max_records(tmp_path):
+def test_fetch_pages_max_records_is_page_aligned_no_loss(tmp_path):
+    # The cap is page-aligned: whole pages are persisted (never sliced), so no
+    # record is dropped. With pages of 2 and max_records=3, it stops AFTER the
+    # page that crosses the cap -> A,B,C,D (overshoots to a page boundary).
     collected = []
 
     def on_page(rows, page_index):
@@ -295,5 +298,46 @@ def test_fetch_pages_respects_max_records(tmp_path):
     with client_with_handler(cfg, _three_page_handler()) as c:
         total = c.fetch_pages("works", on_page, filters="f:1", max_records=3,
                               checkpoint_path=tmp_path / "cp.json")
-    assert total == 3
-    assert collected == ["A", "B", "C"]  # capped mid-second-page
+    assert total == 4
+    assert collected == ["A", "B", "C", "D"]  # full pages, nothing sliced/lost
+
+
+def test_fetch_pages_partial_can_be_expanded(tmp_path):
+    # A capped run saves status 'partial' (not complete), so a later run CONTINUES
+    # instead of being blocked as finished (the 4.1 bug).
+    import json
+    cfg = make_config(tmp_path, cache_enabled=False)
+    checkpoint = tmp_path / "cp.json"
+
+    first = []
+    with client_with_handler(cfg, _three_page_handler()) as c:
+        c.fetch_pages("works", lambda rows, i: first.extend(r["id"] for r in rows),
+                      filters="f:1", max_records=2, checkpoint_path=checkpoint)
+    assert first == ["A", "B"]
+    assert json.loads(checkpoint.read_text())["status"] == "partial"
+
+    # Resume with a larger cap -> continues from the saved cursor.
+    more = []
+    with client_with_handler(cfg, _three_page_handler()) as c:
+        c.fetch_pages("works", lambda rows, i: more.extend(r["id"] for r in rows),
+                      filters="f:1", max_records=10, checkpoint_path=checkpoint)
+    assert more == ["C", "D", "E"]
+    assert json.loads(checkpoint.read_text())["status"] == "complete"
+
+
+def test_fetch_pages_complete_does_not_restart(tmp_path):
+    cfg = make_config(tmp_path, cache_enabled=False)
+    checkpoint = tmp_path / "cp.json"
+    with client_with_handler(cfg, _three_page_handler()) as c:
+        c.fetch_pages("works", lambda rows, i: None, filters="f:1", checkpoint_path=checkpoint)
+    calls = {"n": 0}
+
+    def handler(request):
+        calls["n"] += 1
+        return httpx.Response(200, json={"results": [{"id": "Z"}], "meta": {"next_cursor": None}})
+
+    with client_with_handler(make_config(tmp_path, cache_enabled=False), handler) as c:
+        got = []
+        c.fetch_pages("works", lambda rows, i: got.extend(rows), filters="f:1",
+                      checkpoint_path=checkpoint)
+    assert got == [] and calls["n"] == 0

@@ -15,8 +15,11 @@ download implicitly — the caller must choose the mode.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -76,6 +79,28 @@ class HistoricalCollector:
         )
         if corpus_filter:
             filters = f"{filters},{corpus_filter}"
+
+        # Dataset manifest: records the exact query so different areas/types/periods
+        # cannot silently share a directory (audit 4.2). A mismatch is flagged.
+        query_id = hashlib.sha256(f"works|{filters}|{WORKS_SELECT}".encode()).hexdigest()[:16]
+        manifest_path = Path(base) / self.layer / dataset_name / "dataset_manifest.json"
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        new_manifest = {
+            "dataset_name": dataset_name, "field_id": field_id,
+            "year_min": year_min, "year_max": year_max,
+            "corpus_filter": corpus_filter, "filters": filters,
+            "query_id": query_id, "select": WORKS_SELECT, "per_page": per_page,
+            "created_utc": datetime.now(timezone.utc).isoformat(),
+        }
+        if manifest_path.exists():
+            existing = json.loads(manifest_path.read_text(encoding="utf-8"))
+            if existing.get("query_id") != query_id:
+                raise ValueError(
+                    f"dataset '{dataset_name}' already holds a DIFFERENT query "
+                    f"(existing query_id {existing.get('query_id')} != {query_id}); "
+                    "use a distinct dataset_name to avoid mixing corpora.")
+        else:
+            manifest_path.write_text(json.dumps(new_manifest, indent=2), encoding="utf-8")
 
         self._pages = 0
 

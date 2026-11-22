@@ -83,10 +83,13 @@ temporal:
   history_window_years: 5     # L (project default; 3 and 7 explored later as sensitivity)
   emergence_horizon_years: 1  # Delta_e
   disruption_horizon_years: 3 # Delta_d (exploratory availability study in this phase)
-  # Earliest year of OBSERVED history used to check whether a concept pair is
-  # truly novel (§4.1): must be broader than the recent L-window. A pair seen any
-  # time in [full_history_start, T] is NOT novel, even if absent from the L-window.
-  full_history_start: 2000
+  # Earliest year of OBSERVED history for the novelty check (§4.1). It must match
+  # what was actually COLLECTED: the preliminary corpus spans 2013-2022, so novelty
+  # is defined over [2013, T] and results are qualified as "new co-occurrences in
+  # the sampled historical corpus", NOT globally novel in the literature. Declaring
+  # 2000 here while only collecting 2013-2022 would be inconsistent; set this to the
+  # true earliest collected year. Extending before 2013 is a separate, budgeted step.
+  full_history_start: 2013
   # Retrospective cuts: build features from [cut-L+1, cut], evaluate emergence in (cut, cut+Delta_e].
   cuts:
     - { name: "2017_to_2018", history_start: 2013, cut: 2017, emergence_year: 2018 }
@@ -97,6 +100,22 @@ temporal:
 # Later stages (placeholders kept so config stays the single source of truth).
 # Not consumed in this phase; documented to keep the architecture extensible.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# PDF acquisition + full-text extraction (Stage 2, Phase B). Free sources only.
+# ---------------------------------------------------------------------------
+pdf:
+  dir: "data/pdfs"
+  timeout_seconds: 30
+  max_retries: 2
+  max_bytes_per_file: 52428800     # 50 MB hard cap per file
+  per_host_delay_seconds: 1.0      # politeness delay between hits to the same host
+  min_text_chars: 500              # below this -> treated as scanned / no text layer
+  allow_content_api: false         # OpenAlex paid content API — OFF by default
+  grobid_url: null                 # optional GROBID server (e.g. http://localhost:8070)
+  # Budget ceilings for a full run (the pilot CLI uses its own small caps):
+  max_pdfs: null
+  max_total_bytes: null
+
 concepts:
   extractor: "yake"           # {yake, keybert}; compared in stage 3
   max_concepts_per_doc: 15

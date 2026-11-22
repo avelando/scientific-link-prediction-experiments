@@ -21,12 +21,18 @@ dependencies = [
     "tenacity>=8.2",
     "platformdirs>=4.0",
     "tqdm>=4.66",
+    "networkx>=3.2",
+    "scikit-learn>=1.4",
+    "scipy>=1.11",
+    "yake>=0.4.8",
 ]
 
 [project.optional-dependencies]
 viz = ["seaborn>=0.13"]
-nlp = ["yake>=0.4.8", "keybert>=0.8", "sentence-transformers>=2.6"]
-graph = ["networkx>=3.2", "python-igraph>=0.11", "scikit-learn>=1.4", "scipy>=1.11"]
+# KeyBERT (optional comparison) pulls sentence-transformers/torch — heavy; install
+# only when running the YAKE-vs-KeyBERT comparison.
+nlp = ["keybert>=0.8", "sentence-transformers>=2.6"]
+graph = ["python-igraph>=0.11"]
 dev = ["pytest>=8.0", "pytest-cov>=5.0", "respx>=0.21", "mypy>=1.8", "ruff>=0.3"]
 
 [project.scripts]
@@ -35,6 +41,8 @@ slpe-report-fields = "slpe.cli.report_characterization:main"
 slpe-sample-quality = "slpe.cli.sample_quality:main"
 slpe-weighted-fields = "slpe.cli.weighted_fields:main"
 slpe-collect-pilot = "slpe.cli.collect_pilot:main"
+slpe-collect-pdfs-pilot = "slpe.cli.collect_pdfs_pilot:main"
+slpe-run-linkpred = "slpe.cli.run_linkpred:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

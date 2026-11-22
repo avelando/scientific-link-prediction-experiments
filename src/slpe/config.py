@@ -141,6 +141,20 @@ class TemporalConfig:
 
 
 @dataclass(frozen=True)
+class PdfConfig:
+    dir: Path
+    timeout_seconds: float
+    max_retries: int
+    max_bytes_per_file: int
+    per_host_delay_seconds: float
+    min_text_chars: int
+    allow_content_api: bool
+    grobid_url: str | None
+    max_pdfs: int | None
+    max_total_bytes: int | None
+
+
+@dataclass(frozen=True)
 class Config:
     seed: int
     openalex: OpenAlexConfig
@@ -148,6 +162,7 @@ class Config:
     corpus: CorpusConfig
     characterization: CharacterizationConfig
     temporal: TemporalConfig
+    pdf: PdfConfig
     raw: dict[str, Any] = field(default_factory=dict, repr=False)
 
 
@@ -262,6 +277,20 @@ def load_config(
         full_history_start=int(t.get("full_history_start", 2000)),
     )
 
+    pd_ = data.get("pdf", {})
+    pdf = PdfConfig(
+        dir=_resolve_path(root, str(pd_.get("dir", "data/pdfs"))),
+        timeout_seconds=float(pd_.get("timeout_seconds", 30.0)),
+        max_retries=int(pd_.get("max_retries", 2)),
+        max_bytes_per_file=int(pd_.get("max_bytes_per_file", 52428800)),
+        per_host_delay_seconds=float(pd_.get("per_host_delay_seconds", 1.0)),
+        min_text_chars=int(pd_.get("min_text_chars", 500)),
+        allow_content_api=bool(pd_.get("allow_content_api", False)),
+        grobid_url=(str(pd_["grobid_url"]) if pd_.get("grobid_url") else None),
+        max_pdfs=(int(pd_["max_pdfs"]) if pd_.get("max_pdfs") is not None else None),
+        max_total_bytes=(int(pd_["max_total_bytes"]) if pd_.get("max_total_bytes") is not None else None),
+    )
+
     cfg = Config(
         seed=int(data.get("seed", 0)),
         openalex=openalex,
@@ -269,6 +298,7 @@ def load_config(
         corpus=corpus,
         characterization=characterization,
         temporal=temporal,
+        pdf=pdf,
         raw=data,
     )
     problems = validate_config(cfg)
@@ -296,6 +326,15 @@ def validate_config(cfg: Config) -> list[str]:
             p.append(f"eligibility.{frac_name} {val} outside [0, 1]")
     if not cfg.corpus.types:
         p.append("corpus.types must list at least one OpenAlex work type")
+    # Novelty history must begin at or before the earliest feature window, and
+    # should not claim coverage before what is actually collected.
+    if cfg.temporal.cuts:
+        earliest_feature = min(c.history_start for c in cfg.temporal.cuts)
+        if cfg.temporal.full_history_start > earliest_feature:
+            p.append(
+                f"temporal.full_history_start {cfg.temporal.full_history_start} is after "
+                f"the earliest feature window start {earliest_feature}"
+            )
     return p
 
 

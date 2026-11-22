@@ -52,7 +52,38 @@ See also [`audit_response_matrix.md`](audit_response_matrix.md) for the Stage-1 
 | Bibliometric edges (citing→cited, external kept) | done+tested | `collection/bibliometric.py` |
 | Temporal separation / no-leakage enforcement | done+tested | `collection/temporal.py` |
 | Pilot CLI (real run, idempotent resume, cost estimate) | done | `cli/collect_pilot.py` |
-| Concepts, networks, link prediction, disruption indices, RAG/LLM | planned | Stage ≥ 3 |
+
+### Stage-2 Phase A/B corrections + PDF pipeline
+
+| Area | Impl. | Where |
+|---|---|---|
+| Checkpoint states (complete/partial/interrupted/failed; capped≠done) | done+tested | `openalex/client.py::fetch_pages`, `tests/test_client.py` |
+| Dataset identity manifest (query id; refuse mixed corpora) | done | `collection/collector.py` |
+| "external" → "outside observed corpus" rename | done+tested | `collection/bibliometric.py`, `tests/test_collection.py` |
+| Canonical id-mapping applied to references/topics | done+tested | `collection/dedup.py`, `tests/test_collection.py` |
+| `full_history_start` aligned to collected range + validated | done+tested | `config.py`, `config/default.yaml` |
+| OA PDF source extraction (best_oa → locations → oa_url) | done+tested | `pdf/locations.py`, `tests/test_pdf.py` |
+| PDF download (limits, politeness, status-aware retries, hash) | done+tested | `pdf/download.py`, `tests/test_pdf.py` |
+| PDF validation (signature, pages, text layer, HTML reject) | done+tested | `pdf/validate.py`, `tests/test_pdf.py` |
+| Full-text extraction (PyMuPDF + optional GROBID; ref split) | done+tested | `pdf/extract.py`, `tests/test_pdf.py` |
+| PDF viability pilot (real funnel + cost/storage projection) | done | `cli/collect_pdfs_pilot.py` |
+| PDF local reuse + fixed-schema attempts CSV + reused/downloaded/not-obtained | done+tested | `pdf/download.py`, `cli/collect_pdfs_pilot.py`, `tests/test_pdf.py` |
+| Page-aligned cap (no mid-page record loss) | done+tested | `openalex/client.py`, `tests/test_client.py` |
+| `has_pdf_url` selection; oa_url not treated as PDF | done+tested | `pdf/locations.py`, `cli/collect_pdfs_pilot.py` |
+
+### Stage-3 link-prediction pipeline (title+abstract)
+
+| Area | Impl. | Where |
+|---|---|---|
+| Concept extraction (YAKE) + normalization | done+tested | `concepts/extract.py`, `tests/test_pipeline.py` |
+| Semantic co-occurrence network + stats | done+tested | `networks/semantic.py`, `tests/test_pipeline.py` |
+| Historical novelty ledger (full observed history) | done+tested | `networks/novelty.py`, `tests/test_pipeline.py` |
+| Candidate pairs + emergence labels (temporal) | done+tested | `pairs/candidates.py`, `tests/test_pipeline.py` |
+| Methods: CN, Jaccard, Adamic–Adar, RA, PA + random/popularity baselines | done+tested | `linkpred/methods.py`, `tests/test_pipeline.py` |
+| Metrics: AUPRC, Precision@K, Recall@K, stratified | done+tested | `eval/metrics.py`, `tests/test_pipeline.py` |
+| Real run: CS, 3 cuts, 3 seeds | done | `cli/run_linkpred.py`, `docs/preliminary_results_linkpred.md` |
+| **Stratified negative sampling** (distance/community) | **pending** | sampler records distance/community/incl-prob; stratification is the next step |
+| node2vec, logistic regression, KeyBERT comparison, full-text vs abstract, 3 areas, disruption diagnosis | planned | next increments |
 
 ---
 

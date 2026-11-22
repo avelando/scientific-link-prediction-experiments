@@ -20,7 +20,7 @@ import logging
 
 from slpe.collection.bibliometric import citation_edges, edge_stats
 from slpe.collection.collector import HistoricalCollector
-from slpe.collection.dedup import deduplicate
+from slpe.collection.dedup import apply_canonical_mapping, canonical_mapping, deduplicate
 from slpe.collection.io_parquet import (
     check_publications_integrity,
     dataset_dir,
@@ -108,6 +108,10 @@ def main(argv: list[str] | None = None) -> int:
 
     integrity = check_publications_integrity(pub_table) if pub_table.num_rows else ["empty"]
     canonical, linkage = deduplicate(pub_df)
+    # Apply the canonical id-mapping to the references so edges use canonical ids
+    # consistently (audit 4.5).
+    mapping = canonical_mapping(linkage)
+    refs_df = apply_canonical_mapping(refs_df, mapping, ["citing_id", "cited_id"])
     corpus, cstats = build_semantic_corpus(canonical)
     edges = citation_edges(refs_df)
     estats = edge_stats(edges, set(canonical["work_id"]))
@@ -144,8 +148,8 @@ def main(argv: list[str] | None = None) -> int:
         "semantic_corpus": cstats.n_included,
         "exclusions": cstats.exclusions,
         "citation_edges": estats.n_edges,
-        "edges_internal": estats.n_internal,
-        "edges_external": estats.n_external,
+        "edges_cited_in_corpus": estats.n_cited_in_corpus,
+        "edges_cited_outside_corpus": estats.n_cited_outside_corpus,
         "temporal_partitions": partitions,
         "full_collection_cost_estimate": cost,
     }

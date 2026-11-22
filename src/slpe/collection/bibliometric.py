@@ -24,10 +24,14 @@ if TYPE_CHECKING:
 @dataclass
 class EdgeStats:
     n_edges: int
-    n_citing: int          # distinct citing works
-    n_cited: int           # distinct cited works
-    n_internal: int        # edges whose cited work is within the focal set
-    n_external: int        # edges whose cited work is outside the focal set
+    n_citing: int                 # distinct citing works
+    n_cited: int                  # distinct cited works
+    # The cited work IS vs IS NOT among the works we collected. "Outside the
+    # observed corpus" does NOT mean outside the scientific field — a cited work
+    # can be in-field yet simply not sampled. This distinction matters for the
+    # later disruption index, which needs citations beyond the sampled corpus.
+    n_cited_in_corpus: int
+    n_cited_outside_corpus: int
 
 
 def citation_edges(refs_df: pd.DataFrame) -> pd.DataFrame:
@@ -41,18 +45,19 @@ def citation_edges(refs_df: pd.DataFrame) -> pd.DataFrame:
     return edges.drop_duplicates(subset=["citing_id", "cited_id"]).reset_index(drop=True)
 
 
-def edge_stats(edges: pd.DataFrame, focal_ids: set[str]) -> EdgeStats:
-    """Summarize edges, distinguishing internal vs external cited works.
+def edge_stats(edges: pd.DataFrame, corpus_ids: set[str]) -> EdgeStats:
+    """Summarize edges, distinguishing cited works in vs outside the observed corpus.
 
-    External references are RETAINED (not filtered); this only reports the split.
+    References to works outside the observed corpus are RETAINED (not filtered);
+    this only reports the split.
     """
     if edges.empty:
         return EdgeStats(0, 0, 0, 0, 0)
-    cited_internal = edges["cited_id"].isin(focal_ids)
+    cited_in_corpus = edges["cited_id"].isin(corpus_ids)
     return EdgeStats(
         n_edges=len(edges),
         n_citing=edges["citing_id"].nunique(),
         n_cited=edges["cited_id"].nunique(),
-        n_internal=int(cited_internal.sum()),
-        n_external=int((~cited_internal).sum()),
+        n_cited_in_corpus=int(cited_in_corpus.sum()),
+        n_cited_outside_corpus=int((~cited_in_corpus).sum()),
     )
