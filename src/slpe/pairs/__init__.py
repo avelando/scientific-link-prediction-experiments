@@ -3,6 +3,7 @@
 from slpe.pairs.candidates import (
     CandidatePair,
     emergent_positive_pairs,
+    enumerate_candidate_pairs,
     pair_distance,
     sample_candidate_pairs,
 )
@@ -10,6 +11,7 @@ from slpe.pairs.candidates import (
 __all__ = [
     "CandidatePair",
     "emergent_positive_pairs",
+    "enumerate_candidate_pairs",
     "pair_distance",
     "sample_candidate_pairs",
 ]

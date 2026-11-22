@@ -1,14 +1,21 @@
 """Ranking metrics for link prediction: AUPRC, Precision@K, Recall@K.
 
-Metrics are computed over the evaluation candidate set (positives + sampled
-negatives). Because negatives are sampled, these are CONDITIONAL on the evaluation
-set, not population estimates — reported prevalence and coverage make that explicit.
-Ties in scores are broken deterministically (stable sort) so results are reproducible.
+CRITICAL — tie handling. A naive top-K that breaks ties by input order inflates
+Precision@K whenever positives are listed before negatives and many scores tie
+(e.g. zeros): a constant scorer would score Precision@100 = 1.0. To remove that
+bias, Precision@K and Recall@K here are the **expected** values under a uniformly
+random shuffle of tied scores (closed form), which depends ONLY on the scores and
+labels — never on the input order. A constant scorer therefore yields
+Precision@K = prevalence, and the metric is invariant to permuting the candidates.
+
+AUPRC uses scikit-learn's ``average_precision_score`` (a proper step-wise estimator,
+not trapezoidal interpolation of the PR curve).
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
+from itertools import groupby
 
 
 def auprc(labels: Sequence[int], scores: Sequence[float]) -> float:
@@ -20,26 +27,49 @@ def auprc(labels: Sequence[int], scores: Sequence[float]) -> float:
     return float(average_precision_score(list(labels), list(scores)))
 
 
-def _rank_desc(scores: Sequence[float]) -> list[int]:
-    # Stable descending order by score (ties keep input order).
-    return sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
+def _expected_hits_at_k(labels: Sequence[int], scores: Sequence[float], k: int) -> float:
+    """Expected #positives in the top K under random tie-breaking (closed form).
+
+    Groups candidates by equal score (descending). Whole groups that fit entirely
+    within K contribute all their positives; the group straddling the K boundary
+    contributes its positives scaled by the fraction of its members that fall inside
+    K (= expected count under a uniform random order within the tie group).
+    """
+    k = min(k, len(labels))
+    if k <= 0:
+        return 0.0
+    order = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
+    hits = 0.0
+    filled = 0
+    for _score, grp in groupby(order, key=lambda i: scores[i]):
+        idx = list(grp)
+        size = len(idx)
+        pos = sum(labels[i] for i in idx)
+        if filled + size <= k:
+            hits += pos
+            filled += size
+        else:
+            remaining = k - filled
+            hits += pos * (remaining / size)  # expected positives among the slots taken
+            filled = k
+            break
+    return hits
 
 
 def precision_at_k(labels: Sequence[int], scores: Sequence[float], k: int) -> float:
+    """Expected Precision@K under random tie-breaking (order-independent)."""
     if k <= 0 or not labels:
         return 0.0
-    order = _rank_desc(scores)[:k]
-    hits = sum(labels[i] for i in order)
-    return hits / min(k, len(labels))
+    denom = min(k, len(labels))
+    return _expected_hits_at_k(labels, scores, k) / denom
 
 
 def recall_at_k(labels: Sequence[int], scores: Sequence[float], k: int) -> float:
+    """Expected Recall@K under random tie-breaking (order-independent)."""
     total_pos = sum(labels)
     if total_pos == 0 or k <= 0:
         return 0.0
-    order = _rank_desc(scores)[:k]
-    hits = sum(labels[i] for i in order)
-    return hits / total_pos
+    return _expected_hits_at_k(labels, scores, k) / total_pos
 
 
 def evaluate_method(

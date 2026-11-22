@@ -16,7 +16,11 @@ from slpe.linkpred.methods import (
 )
 from slpe.networks.novelty import NoveltyLedger
 from slpe.networks.semantic import build_semantic_network, cooccurrence_counts, network_stats
-from slpe.pairs.candidates import emergent_positive_pairs, sample_candidate_pairs
+from slpe.pairs.candidates import (
+    emergent_positive_pairs,
+    enumerate_candidate_pairs,
+    sample_candidate_pairs,
+)
 
 # --- concepts -------------------------------------------------------------
 
@@ -25,6 +29,19 @@ def test_normalize_concept():
     assert normalize_concept("the results") is None      # generic
     assert normalize_concept("  Deep-Learning!! ") == "deep-learning"
     assert normalize_concept("123") is None
+
+
+def test_normalization_preserves_scientific_terms():
+    # Regression (audit): these must NOT be over-singularized.
+    assert normalize_concept("physics") == "physics"
+    assert normalize_concept("numerical analysis") == "numerical analysis"  # not "analysi"
+    assert normalize_concept("time series") == "time series"      # not "time sery"
+    assert normalize_concept("quantum mechanics") == "quantum mechanics"
+    assert normalize_concept("species") == "species"
+    assert normalize_concept("kinetics") == "kinetics"
+    # genuine plurals still reduce
+    assert normalize_concept("neural networks") == "neural network"
+    assert normalize_concept("categories") == "category"
 
 
 def test_extract_document_concepts_real_yake():
@@ -84,6 +101,29 @@ def test_emergent_positives_and_sampling():
     assert all(ledger.is_candidate(p.a, p.b) for p in sample)
 
 
+def test_exhaustive_candidate_universe():
+    ledger = NoveltyLedger()
+    ledger.add_documents({"h1": ["a", "b"], "h2": ["c", "d"], "h3": ["a", "c"]})
+    # Known concepts: a,b,c,d. Co-occurred pairs: ab, cd, ac. Eligible (candidate)
+    # pairs: ad, bc, bd  -> 3 total.
+    positives = emergent_positive_pairs({"f": ["a", "d"]}, ledger)
+    g = build_semantic_network({"h1": ["a", "b"], "h2": ["c", "d"], "h3": ["a", "c"]})
+    universe = enumerate_candidate_pairs(ledger, g, positives)
+    keys = {frozenset((p.a, p.b)) for p in universe}
+    assert keys == {frozenset(("a", "d")), frozenset(("b", "c")), frozenset(("b", "d"))}
+    # exactly the one positive, real prevalence = 1/3
+    assert sum(p.label for p in universe) == 1
+    assert all(p.inclusion_prob == 1.0 for p in universe)       # population = sample
+    assert all(not ledger.has_cooccurred(p.a, p.b) for p in universe)
+
+
+def test_enumerate_returns_none_when_too_large():
+    ledger = NoveltyLedger()
+    ledger.add_documents({f"d{i}": [f"c{i}", f"c{i+1}"] for i in range(50)})
+    g = build_semantic_network({f"d{i}": [f"c{i}", f"c{i+1}"] for i in range(50)})
+    assert enumerate_candidate_pairs(ledger, g, set(), max_candidates=10) is None
+
+
 # --- link-prediction methods ---------------------------------------------
 
 def test_linkpred_methods_known_values():
@@ -123,3 +163,32 @@ def test_metrics_known_values():
 
 def test_auprc_handles_no_positives():
     assert auprc([0, 0, 0], [0.1, 0.2, 0.3]) == 0.0
+
+
+def test_precision_at_k_constant_scores_equals_prevalence():
+    # The bug: positives listed first + tied (zero) scores -> P@K inflated to 1.0.
+    # Fixed: expected P@K under tie-breaking equals prevalence for a constant scorer.
+    labels = [1, 1, 1, 0, 0, 0, 0, 0, 0, 0]   # 3 positives, listed first
+    scores = [0.0] * 10                         # all tied
+    prevalence = 0.3
+    assert abs(precision_at_k(labels, scores, 5) - prevalence) < 1e-9
+    assert abs(precision_at_k(labels, scores, 10) - prevalence) < 1e-9
+    assert abs(recall_at_k(labels, scores, 5) - (5 * prevalence / 3)) < 1e-9
+
+
+def test_metrics_invariant_to_candidate_permutation():
+    import random
+    labels = [1, 0, 1, 0, 0, 1, 0, 0, 1, 0]
+    scores = [0.5, 0.5, 0.2, 0.9, 0.2, 0.5, 0.1, 0.9, 0.2, 0.5]  # many ties
+    base_p = precision_at_k(labels, scores, 4)
+    base_r = recall_at_k(labels, scores, 4)
+    base_ap = auprc(labels, scores)
+    rng = random.Random(7)
+    for _ in range(20):
+        perm = list(range(len(labels)))
+        rng.shuffle(perm)
+        pl = [labels[i] for i in perm]
+        ps = [scores[i] for i in perm]
+        assert abs(precision_at_k(pl, ps, 4) - base_p) < 1e-9
+        assert abs(recall_at_k(pl, ps, 4) - base_r) < 1e-9
+        assert abs(auprc(pl, ps) - base_ap) < 1e-9

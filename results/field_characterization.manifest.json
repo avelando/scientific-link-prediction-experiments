@@ -1,6 +1,6 @@
 {
   "run_name": "field_characterization",
-  "run_utc": "2026-11-21T20:40:56.948758+00:00",
+  "run_utc": "2026-11-22T05:28:09.299245+00:00",
   "temporal_mode": "retrospective_snapshot",
   "params": {
     "config_path": "config/default.yaml",
@@ -66,8 +66,8 @@
     "python-dotenv": "1.2.4",
     "scientific-link-prediction-experiments": "0.1.0"
   },
-  "git_commit": "fa8199af1471f667f38314e5d3eefc92de7050b0",
-  "config_sha256": "324576fa204ccdc997d367407ba9d88867f2570514dd9dc8c394c479d8ff0f04",
+  "git_commit": "f021a90bfa5654bb31516db58c8d135e1735a526",
+  "config_sha256": "b211caf7c5130aebf2fe241bea096bf56bca7994f6dfebec1680bca2a8015ff9",
   "artifact_hashes": {
     "field_characterization.csv": "7331e9e7eeac927254410f1df59a26c821c52b67960ef136ebb38000ea98ff01",
     "field_characterization_years.csv": "f2a5e1476aff7ba77a7690479d4357e39deb312afb8fae20fe270f173894e125",

@@ -82,8 +82,12 @@ See also [`audit_response_matrix.md`](audit_response_matrix.md) for the Stage-1 
 | Methods: CN, Jaccard, Adamic–Adar, RA, PA + random/popularity baselines | done+tested | `linkpred/methods.py`, `tests/test_pipeline.py` |
 | Metrics: AUPRC, Precision@K, Recall@K, stratified | done+tested | `eval/metrics.py`, `tests/test_pipeline.py` |
 | Real run: CS, 3 cuts, 3 seeds | done | `cli/run_linkpred.py`, `docs/preliminary_results_linkpred.md` |
-| **Stratified negative sampling** (distance/community) | **pending** | sampler records distance/community/incl-prob; stratification is the next step |
-| node2vec, logistic regression, KeyBERT comparison, full-text vs abstract, 3 areas, disruption diagnosis | planned | next increments |
+| **Precision@K/Recall@K unbiased under ties** (expected value, order-independent) | done+tested | `eval/metrics.py`, `tests/test_pipeline.py` |
+| **Exhaustive candidate universe** (real prevalence, no sampling artifact) | done+tested | `pairs/candidates.py::enumerate_candidate_pairs`, `tests/test_pipeline.py` |
+| **Conservative concept normalization** (preserves physics/analysis/series) | done+tested | `concepts/extract.py`, `tests/test_pipeline.py` |
+| Concept cache key (sample+seed+params+norm version) | done | `cli/run_linkpred.py` |
+| Stratified-by-distance/community analysis for all methods | done | `cli/run_linkpred.py`, `linkpred_by_stratum.csv` |
+| node2vec, logistic regression, KeyBERT comparison, full-text vs abstract, Physics/Medicine, disruption diagnosis | planned | next increments (B–E) |
 
 ---
 

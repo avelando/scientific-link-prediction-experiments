@@ -1,6 +1,6 @@
 # Stage 1 — preliminary results: field characterization & eligibility
 
-_Rendered from frozen artifacts. Collection run: 2026-11-21T20:40:56.948758+00:00 (code run time, NOT a frozen DB snapshot). Corpus types: article. git: fa8199af1471f667f38314e5d3eefc92de7050b0._
+_Rendered from frozen artifacts. Collection run: 2026-11-22T05:28:09.299245+00:00 (code run time, NOT a frozen DB snapshot). Corpus types: article. git: f021a90bfa5654bb31516db58c8d135e1735a526._
 
 > Feasibility indicators only. Eligibility uses data quality, never model accuracy. English-abstract figures are OpenAlex METADATA flags; see the textual-quality sampling report for inspected text coverage.
 

@@ -25,6 +25,7 @@ dependencies = [
     "scikit-learn>=1.4",
     "scipy>=1.11",
     "yake>=0.4.8",
+    "pymupdf>=1.24",
 ]
 
 [project.optional-dependencies]

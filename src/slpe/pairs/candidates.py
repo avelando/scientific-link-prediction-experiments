@@ -69,6 +69,65 @@ def _community_map(g: nx.Graph) -> dict[str, int]:
     return {node: i for i, comm in enumerate(comms) for node in comm}
 
 
+def _all_distances(g: nx.Graph, cutoff: int) -> dict[str, dict[str, int]]:
+    """Precompute bounded shortest-path distances from every node (BFS per node)."""
+    return {
+        n: dict(nx.single_source_shortest_path_length(g, n, cutoff=cutoff))
+        for n in g.nodes()
+    }
+
+
+def enumerate_candidate_pairs(
+    ledger: NoveltyLedger,
+    feature_graph: nx.Graph,
+    positives: set[frozenset],
+    *,
+    eligible_concepts: set[str] | None = None,
+    distance_cutoff: int = 4,
+    max_candidates: int = 2_000_000,
+) -> list[CandidatePair] | None:
+    """Exhaustively enumerate EVERY eligible candidate pair (the full universe).
+
+    The candidate universe is the set of unordered pairs among ``eligible_concepts``
+    (default: all concepts known at T) that never co-occurred in the observed history.
+    Each is labelled positive iff it is in ``positives``. This removes the negative-
+    sampling artifact: all methods see the same complete universe, with real
+    prevalence. Returns ``None`` if the number of pairs would exceed ``max_candidates``
+    (caller should then sample). ``eligible_concepts`` lets the caller apply a
+    frequency floor (e.g. concepts appearing in >= k historical documents) so the
+    universe is both tractable and reliable.
+
+    Inclusion probability is 1.0 for every pair (the sample IS the population).
+    """
+    from itertools import combinations
+
+    base = ledger.concepts if eligible_concepts is None else (ledger.concepts & set(eligible_concepts))
+    concepts = sorted(base)
+    n = len(concepts)
+    if n * (n - 1) // 2 > max_candidates:
+        return None
+
+    comm = _community_map(feature_graph)
+    dist = _all_distances(feature_graph, distance_cutoff)
+
+    def distance(a: str, b: str) -> int:
+        if a not in feature_graph or b not in feature_graph:
+            return -1
+        d = dist.get(a, {}).get(b)
+        return d if d is not None else -1
+
+    out: list[CandidatePair] = []
+    for a, b in combinations(concepts, 2):
+        if ledger.has_cooccurred(a, b):   # co-occurred before T -> not eligible
+            continue
+        label = 1 if frozenset((a, b)) in positives else 0
+        same = (comm[a] == comm[b]) if (a in comm and b in comm) else None
+        out.append(CandidatePair(a, b, label, 1.0, distance(a, b), same))
+    if len(out) > max_candidates:
+        return None
+    return out
+
+
 def sample_candidate_pairs(
     ledger: NoveltyLedger,
     feature_graph: nx.Graph,

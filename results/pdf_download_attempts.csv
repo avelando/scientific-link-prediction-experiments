@@ -1,0 +1,34 @@
+field_id,work_id,url,source,ok,http_status,content_type,n_bytes,failure_reason,sha256
+17,W3177714943,https://jusst.org/wp-content/uploads/2021/07/Deployment-of-Applications-Using-Nginx-Ingress-Controller.pdf,best_oa_location.pdf_url,False,200.0,text/html,114,html_not_pdf,6dc9c7fc93bb488bb0520a6c780a8d3c0fb5486a4711aca49b4c53fac7393023
+17,W130613980,https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/insr.12350,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+17,W130613980,https://eprints.qut.edu.au/199173/1/57039716.pdf,locations.pdf_url,False,403.0,text/html; charset=iso-8859-1,0,http_403,
+17,W4396668945,https://jitc.innotcs.org/index.php/jitc/article/download/4/3,best_oa_location.pdf_url,False,,,0,request_error:ConnectError,
+17,W3081651568,https://www.mdpi.com/2227-7390/8/9/1456/pdf?version=1598796400,best_oa_location.pdf_url,False,403.0,text/html,0,http_403,
+17,W4255024606,https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/phor.12079,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+17,W2906427034,https://arxiv.org/pdf/1812.09658,best_oa_location.pdf_url,True,200.0,application/pdf,292000,,a470e3da3e2720a30f751386f046c5a0777f76cdc4c52b05f4219bdd03663d68
+17,W7137642530,https://www.utupub.fi/bitstreams/3ad7f15c-5768-4286-9f8d-be4fbbfcaa93/download,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+17,W7137642530,https://www.utupub.fi/bitstream/10024/172816/1/submission.pdf,locations.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+17,W2908575301,https://www.frontiersin.org/articles/10.3389/fdata.2018.00007/pdf,best_oa_location.pdf_url,True,200.0,application/pdf,458003,,8e35e9d68f486e3d1e8c4ac64464b7b11ded6878435429ce6f18247b3f0c7170
+17,W4213312030,https://academic.oup.com/logcom/article-pdf/31/6/1482/40407880/exab050.pdf,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+17,W4213312030,https://arxiv.org/pdf/2004.05400,locations.pdf_url,True,200.0,application/pdf,553806,,81cde08c72c8bcd443a050d85e0ff15162f1168ae0384331f78392fa6ce76e8d
+17,W4312341217,https://cyberleninka.ru/article/n/primenenie-sistemy-tehnicheskogo-zreniya-rekonstruiruyuschey-trehmernuyu-formu-obektov-kosmicheskoy-tehniki-1/pdf,locations.pdf_url,True,200.0,application/pdf,276881,,47643663f4a44b66a4fdcbfe103545b35ca2c5a6f430bdb0d42f65a6b1de3f9d
+31,W2132360712,https://www.spiedigitallibrary.org/journals/journal-of-micro-nanolithography-mems-and-moems/volume-12/issue-1/013004/Identification-and-reconstruction-of-diffraction-structures-in-optical-scatterometry-using/10.1117/1.JMM.12.1.013004.pdf,best_oa_location.pdf_url,False,200.0,text/html,1157,html_not_pdf,6b340ce25a72d21f0829a82e9a9781dc22139b7e8c96b0e25e109aae3e9d2f73
+31,W3200749840,https://iopscience.iop.org/article/10.1088/1361-6463/ac2693/pdf,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+31,W2799833871,http://phiro.science/article/S2405631617300842/pdf,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+31,W4235697603,https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/chir.23277,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+31,W4307951656,https://academic.oup.com/mnras/article-pdf/518/1/821/47103725/stac3126.pdf,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+31,W4307951656,https://arxiv.org/pdf/2210.10869,locations.pdf_url,True,200.0,application/pdf,6259754,,dc0c22e0bf23911c71dfa1865c23e019d9d39d3499fb016a81cb5c51d3e8e2a5
+31,W3013646092,https://www.sciencedirect.com/science/article/pii/S1386947719312743/pdf,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+31,W3013646092,https://ris.utwente.nl/ws/files/245371262/Jiao_2020_Tailoring_and_probing_the_quantum_s.pdf,locations.pdf_url,True,200.0,application/pdf,1360420,,8a3decf33d13aae19614021722918a757ce17752b54dcf9da9966bc27f8c798b
+31,W2010611370,https://www.aanda.org/articles/aa/pdf/2014/02/aa22418-13.pdf,best_oa_location.pdf_url,False,403.0,text/html;charset=utf-8,0,http_403,
+31,W2010611370,https://arxiv.org/pdf/1309.5853,locations.pdf_url,True,200.0,application/pdf,8901423,,9df32ccc4b22c15868006bfafe6b42eda0897dab56c63766442565df28d7cca9
+27,W3088652171,http://www.worldallergyorganizationjournal.org/article/S1939455120302611/pdf,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+27,W2309229888,https://www.sciencedirect.com/science/article/pii/S2214250916300130/pdf,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+27,W2132139538,https://pmc.ncbi.nlm.nih.gov/articles/PMC4196229/pdf/,locations.pdf_url,False,200.0,text/html; charset=utf-8,1816,html_not_pdf,f4bbdc3071a0913ad49d4d78490504f4e9d7d297e79af040c6f9554309a75198
+27,W2980212833,https://rsprs.mosuljournals.com/article_89577_9e4b54a0398c1e08212a850e5d48ad07.pdf,best_oa_location.pdf_url,False,,,0,request_error:ConnectError,
+27,W2967987998,https://pmc.ncbi.nlm.nih.gov/articles/PMC6831168/pdf/,locations.pdf_url,False,200.0,text/html; charset=utf-8,1817,html_not_pdf,a0d42432ca73f5ddc38400b5a143bb47df09c1423d18b5be5e230664d52e683a
+27,W2980416246,https://bmjopen.bmj.com/content/bmjopen/9/10/e024044.full.pdf,best_oa_location.pdf_url,False,403.0,text/html; charset=UTF-8,0,http_403,
+27,W3107404473,https://insightsimaging.springeropen.com/track/pdf/10.1186/s13244-020-00934-y,best_oa_location.pdf_url,True,200.0,application/pdf,1527378,,19839390e66867fe8a3257128a92e70f49ca8dd603f0d10ab1aee3769562b3e6
+27,W3125073340,https://link.springer.com/content/pdf/10.1007/s00270-020-02764-3.pdf,best_oa_location.pdf_url,True,200.0,application/pdf,474185,,3631178ab8ab6ce78cd8c9e605914ad9af7bb1bdfc02f617e24c64fba98c4630
+27,W2264397290,http://www.scirp.org/journal/PaperDownload.aspx?paperID=63316,best_oa_location.pdf_url,True,200.0,application/pdf,269341,,d7b2020511c021ad2a05e8f44b5759475cd085138fd2dd4c94d0aaa989228426
+27,W4232059784,https://ejap.journals.ekb.eg/article_172217_b3b8d2ce82265c57328165fe623631c7.pdf,best_oa_location.pdf_url,False,,,0,request_error:ConnectError,

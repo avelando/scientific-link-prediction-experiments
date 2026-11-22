@@ -1,12 +1,14 @@
 {
   "run_name": "pdf_viability_pilot",
-  "run_utc": "2026-11-21T22:04:11.188775+00:00",
+  "run_utc": "2026-11-22T05:26:55.111726+00:00",
   "temporal_mode": "retrospective_snapshot",
   "params": {
     "fields": [
-      17
+      17,
+      31,
+      27
     ],
-    "n_per_field": 30,
+    "n_per_field": 15,
     "corpus_filter": "type:article,has_abstract:true,language:en,from_publication_date:2013-01-01,to_publication_date:2022-12-31",
     "seed": 20260101,
     "allow_content_api": false,
@@ -17,33 +19,64 @@
         "eligible_records": 1105805,
         "oa_eligible": 687760,
         "oa_availability": 0.622,
-        "sampled": 30,
-        "with_pdf_url": 30,
-        "downloaded": 21,
-        "valid_pdf": 0,
-        "text_extracted": 0,
+        "sampled": 15,
+        "with_pdf_url": 15,
+        "downloaded": 4,
+        "reused": 5,
+        "valid_pdf": 9,
+        "text_extracted": 9,
         "pdf_url_rate": 1.0,
-        "valid_rate": 0.0,
-        "final_rate": 0.0
+        "valid_rate": 0.6,
+        "final_rate": 0.6
+      },
+      {
+        "field_id": 31,
+        "eligible_records": 919402,
+        "oa_eligible": 664457,
+        "oa_availability": 0.723,
+        "sampled": 15,
+        "with_pdf_url": 15,
+        "downloaded": 3,
+        "reused": 8,
+        "valid_pdf": 11,
+        "text_extracted": 11,
+        "pdf_url_rate": 1.0,
+        "valid_rate": 0.733,
+        "final_rate": 0.733
+      },
+      {
+        "field_id": 27,
+        "eligible_records": 5708586,
+        "oa_eligible": 3909407,
+        "oa_availability": 0.685,
+        "sampled": 15,
+        "with_pdf_url": 15,
+        "downloaded": 3,
+        "reused": 5,
+        "valid_pdf": 8,
+        "text_extracted": 8,
+        "pdf_url_rate": 1.0,
+        "valid_rate": 0.533,
+        "final_rate": 0.533
       }
     ],
     "projection": {
-      "measured_bytes_per_valid_pdf": 0,
-      "mean_final_processable_rate": 0.0,
-      "target_processable_docs": 33000,
-      "estimated_pdf_storage_gb": null,
-      "estimated_works_to_sample": null,
+      "measured_bytes_per_valid_pdf": 727789,
+      "mean_final_processable_rate": 0.622,
+      "target_processable_docs": 99000,
+      "estimated_pdf_storage_gb": 72.05,
+      "estimated_works_to_sample": 159163,
       "note": "rates are from a SMALL sample; treat as indicative, not population estimates"
     }
   },
   "stats": {
-    "n_requests": 1,
-    "n_cache_hits": 2,
+    "n_requests": 3,
+    "n_cache_hits": 6,
     "n_retries": 0,
     "n_network_errors": 0,
-    "bytes_downloaded": 123047,
+    "bytes_downloaded": 261692,
     "seconds_waiting": 0.0,
-    "pdf_total_bytes": 21068494
+    "pdf_total_bytes": 20378095
   },
   "python": "3.13.0",
   "platform": "Windows-11-10.0.26300-SP0",
@@ -57,10 +90,10 @@
     "python-dotenv": "1.2.4",
     "scientific-link-prediction-experiments": "0.1.0"
   },
-  "git_commit": "e3bfa684079a49c508e224239390d29367deeb68",
+  "git_commit": "f021a90bfa5654bb31516db58c8d135e1735a526",
   "config_sha256": null,
   "artifact_hashes": {
-    "pdf_viability_funnel.csv": "37694bc6e191078610b7b95a67ce12c2a54f8faeb2cf56abae9438a7897f56a0"
+    "pdf_viability_funnel.csv": "8f193c7ad4a315b518def266596af8c1f93de20b7cfdf2c8fc4c038cb94f1329"
   },
   "errors": []
 }

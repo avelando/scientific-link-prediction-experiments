@@ -1,10 +1,10 @@
 {
   "run_name": "pilot_collection",
-  "run_utc": "2026-11-21T21:28:19.864996+00:00",
+  "run_utc": "2026-11-22T05:28:00.440832+00:00",
   "temporal_mode": "retrospective_snapshot",
   "params": {
     "field_id": 17,
-    "max_records": null,
+    "max_records": 600,
     "corpus_filter": "type:article,has_abstract:true,language:en",
     "year_range": [
       2013,
@@ -12,19 +12,21 @@
     ],
     "base_dir": "C:\\Users\\avela\\Desktop\\scientific-link-prediction-experiments\\data",
     "pilot_report": {
-      "collected_raw": 600,
-      "pages": 0,
-      "integrity_issues": [],
+      "collected_raw": 800,
+      "pages": 4,
+      "integrity_issues": [
+        "200 duplicate work_id rows"
+      ],
       "after_dedup": 600,
-      "version_links": 0,
+      "version_links": 200,
       "uncertain_dupe_flags": 0,
       "semantic_corpus": 592,
       "exclusions": {
         "short_abstract": 8
       },
       "citation_edges": 59307,
-      "edges_internal": 1364,
-      "edges_external": 57943,
+      "edges_cited_in_corpus": 1364,
+      "edges_cited_outside_corpus": 57943,
       "temporal_partitions": {
         "2017_to_2018": {
           "predictor": 283,
@@ -52,7 +54,7 @@
   },
   "stats": {
     "n_requests": 0,
-    "n_cache_hits": 1,
+    "n_cache_hits": 2,
     "n_retries": 0,
     "n_network_errors": 0,
     "bytes_downloaded": 0,
@@ -70,7 +72,7 @@
     "python-dotenv": "1.2.4",
     "scientific-link-prediction-experiments": "0.1.0"
   },
-  "git_commit": "fa8199af1471f667f38314e5d3eefc92de7050b0",
+  "git_commit": "f021a90bfa5654bb31516db58c8d135e1735a526",
   "config_sha256": null,
   "artifact_hashes": {
     "semantic_corpus.parquet": "1473bb757cf9c547b13a08b585e0e0fd27cb49d4f2ac76ac6d43e14bca0fa574",

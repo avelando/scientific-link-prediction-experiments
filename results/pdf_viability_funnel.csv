@@ -1,2 +1,4 @@
-field_id,eligible_records,oa_eligible,oa_availability,sampled,with_pdf_url,downloaded,valid_pdf,text_extracted,pdf_url_rate,valid_rate,final_rate
-17,1105805,687760,0.622,30,30,21,0,0,1.0,0.0,0.0
+field_id,eligible_records,oa_eligible,oa_availability,sampled,with_pdf_url,downloaded,reused,valid_pdf,text_extracted,pdf_url_rate,valid_rate,final_rate
+17,1105805,687760,0.622,15,15,4,5,9,9,1.0,0.6,0.6
+31,919402,664457,0.723,15,15,3,8,11,11,1.0,0.733,0.733
+27,5708586,3909407,0.685,15,15,3,5,8,8,1.0,0.533,0.533

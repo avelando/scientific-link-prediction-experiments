@@ -28,14 +28,29 @@ _STOP_CONCEPTS = {
 }
 
 
+# Singular scientific terms that end in 's' (or 'ies') and must NOT be singularized.
+_UNINFLECTED = {
+    "series", "species", "bias", "lens", "gas", "news", "means", "process",
+    "status", "basis", "axis", "analysis", "synthesis", "hypothesis", "thesis",
+    "diagnosis", "emphasis", "apparatus", "consensus", "corpus", "nucleus", "radius",
+}
 def _singularize(token: str) -> str:
-    """Very conservative plural -> singular for a single token."""
-    if len(token) > 4 and token.endswith("ies"):
-        return token[:-3] + "y"
-    if len(token) > 4 and token.endswith("ses"):
-        return token[:-2]
-    if len(token) > 3 and token.endswith("s") and not token.endswith("ss"):
-        return token[:-1]
+    """Conservative plural -> singular.
+
+    Preserves scientific terms whose 's' is not a plural (physics, analysis,
+    kinetics, series, ...) via a suffix guard and an exception list, so it never
+    produces forms like 'physic', 'analysi' or 'sery'. Only clear regular plurals
+    are reduced ('networks'->'network', 'categories'->'category').
+    """
+    if len(token) <= 4 or token in _UNINFLECTED:
+        return token
+    for suf in ("ss", "us", "is", "sis", "ics", "ous"):
+        if token.endswith(suf):
+            return token
+    if token.endswith("ies"):
+        return token[:-3] + "y"      # categories -> category (series/species excepted above)
+    if token.endswith("s"):
+        return token[:-1]            # networks -> network
     return token
 
 
